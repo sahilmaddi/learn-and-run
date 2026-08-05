@@ -30,7 +30,7 @@ const IconPause = ({ className }) => (
 );
 
 // ============================================================================
-// BULLETPROOF DUAL-ENGINE AUDIO TTS (NATIVE + WEB AUDIO FALLBACK)
+// BULLETPROOF MULTI-LANGUAGE PRONUNCIATION ENGINE
 // ============================================================================
 let cachedVoices = [];
 
@@ -45,18 +45,44 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   window.speechSynthesis.onvoiceschanged = updateVoicesCache;
 }
 
-// Phonetic overrides for devices strictly locked to English TTS voices
-const HARDCODED_PHONETICS = {
+// Global phonetic lookup dictionary for problematic short words or acronym triggers across all supported languages
+const GLOBAL_PRONUNCIATION_MAP = {
+  // Spanish
   'sí': 'see',
   'si': 'see',
-  '¡hola!': 'oh-lah',
-  'hola': 'oh-lah',
-  'no': 'noh',
+  'por favor': 'por fa-bor',
   'ir': 'eer',
   'tú': 'too',
   'yo': 'yoh',
+  'él': 'ell',
+  'qué': 'keh',
+  'dónde': 'don-deh',
+  // French
   'oui': 'wee',
-  'ja': 'yah'
+  'non': 'noh',
+  'je': 'zhuh',
+  'tu': 'too',
+  'il': 'eel',
+  'elle': 'ell',
+  's’il vous plaît': 'seel voo pleh',
+  'bonjour !': 'boh-zhoor',
+  // German
+  'ja': 'yah',
+  'nein': 'nine',
+  'ich': 'ish',
+  'du': 'doo',
+  'er': 'air',
+  'sie': 'zee',
+  'bitte': 'bit-teh',
+  'danke': 'dahn-keh',
+  // Italian
+  'sì': 'see',
+  'no': 'noh',
+  'io': 'ee-oh',
+  'tu': 'too',
+  'per favore': 'per fa-vo-reh',
+  'grazie': 'graht-syeh',
+  'ciao!': 'chow'
 };
 
 const playSoundEffect = (type) => {
@@ -83,50 +109,60 @@ const playSoundEffect = (type) => {
   }
 };
 
-const speakTextHelper = (text, langCode) => {
-  if (!text) return;
+const speakTextHelper = (text, langCode, voiceGender = 'female') => {
+  if (!text || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
-  // Clean text and strip leading/trailing inverted punctuation
+  window.speechSynthesis.cancel();
+  if (cachedVoices.length === 0) updateVoicesCache();
+
+  // Clean inverted punctuation and extra spaces
   const cleanedText = text.replace(/[¡!¿?]/g, '').trim();
   const lowerText = cleanedText.toLowerCase();
   const shortLang = langCode.slice(0, 2).toLowerCase();
 
-  // Try Online Native Audio Stream first for guaranteed native accent
-  const fallbackAudioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${shortLang}&client=tw-ob&q=${encodeURIComponent(cleanedText)}`;
-  
-  const audio = new Audio(fallbackAudioUrl);
-  const playPromise = audio.play();
+  // Filter available system voices matching target language
+  const languageVoices = cachedVoices.filter((v) => {
+    const vLang = v.lang.replace('_', '-').toLowerCase();
+    return vLang.startsWith(shortLang);
+  });
 
-  if (playPromise !== undefined) {
-    playPromise.catch(() => {
-      // Fallback to Web Speech API if offline or blocked
-      if (!('speechSynthesis' in window)) return;
+  // Strict gender selection check
+  let selectedVoice = languageVoices.find((v) => {
+    const name = v.name.toLowerCase();
+    if (voiceGender === 'female') {
+      return /female|woman|zira|samantha|victoria|helena|monica|aurelie|anna|kyoko|alice/i.test(name);
+    } else {
+      return /male|man|david|george|jorge|diego|paul|thomas|markus|otoya/i.test(name);
+    }
+  });
 
-      window.speechSynthesis.cancel();
-      if (cachedVoices.length === 0) updateVoicesCache();
-
-      const nativeVoice =
-        cachedVoices.find((v) => v.lang.replace('_', '-').toLowerCase() === langCode.toLowerCase()) ||
-        cachedVoices.find((v) => v.lang.toLowerCase().startsWith(shortLang));
-
-      // Prevent acronym spelling by lowercasing and ending with a period
-      let speakString = lowerText;
-      if (!nativeVoice && HARDCODED_PHONETICS[lowerText]) {
-        speakString = HARDCODED_PHONETICS[lowerText];
-      }
-
-      // Appending a period prevents TTS from treating short 2-letter words as acronyms
-      const utter = new SpeechSynthesisUtterance(speakString + '.');
-      utter.lang = langCode;
-      utter.rate = 0.85;
-
-      if (nativeVoice) {
-        utter.voice = nativeVoice;
-      }
-
-      window.speechSynthesis.speak(utter);
-    });
+  // Fallback to any voice matching target language
+  if (!selectedVoice && languageVoices.length > 0) {
+    selectedVoice = languageVoices[0];
   }
+
+  let textToSpeak = cleanedText;
+
+  // If no native voice exists on device for this language, apply phonetic transcription to prevent broken English spelling
+  if (!selectedVoice && GLOBAL_PRONUNCIATION_MAP[lowerText]) {
+    textToSpeak = GLOBAL_PRONUNCIATION_MAP[lowerText];
+  }
+
+  // Appending punctuation forces the TTS engine to process short words as natural speech rather than acronyms
+  const utter = new SpeechSynthesisUtterance(textToSpeak + '.');
+  utter.lang = langCode;
+  utter.rate = 0.85;
+
+  // Dynamic pitch & pitch-shift fallback based on voice gender selection
+  if (selectedVoice) {
+    utter.voice = selectedVoice;
+    utter.pitch = voiceGender === 'female' ? 1.05 : 0.95;
+  } else {
+    // Artificial pitch adjustment if exact gender voice pack is missing
+    utter.pitch = voiceGender === 'female' ? 1.3 : 0.7;
+  }
+
+  window.speechSynthesis.speak(utter);
 };
 
 // ============================================================================
@@ -260,8 +296,12 @@ const runAudioTracks = [
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('learn');
+  // SETUP STATE (Onboarding screen flow)
+  const [isConfigured, setIsConfigured] = useState(false);
   const [selectedLang, setSelectedLang] = useState('spanish');
+  const [selectedGender, setSelectedGender] = useState('female');
+
+  const [activeTab, setActiveTab] = useState('learn');
   const [isDark, setIsDark] = useState(true);
 
   // Module & Word Index
@@ -295,7 +335,13 @@ export default function App() {
   }, [isDark]);
 
   const speakCurrentWord = (text) => {
-    speakTextHelper(text, currentLangObj.langCode);
+    speakTextHelper(text, currentLangObj.langCode, selectedGender);
+  };
+
+  const handleStartLearning = () => {
+    setIsConfigured(true);
+    const firstWord = modulesData[0].words[0];
+    speakTextHelper(firstWord[selectedLang] || firstWord.spanish, currentLangObj.langCode, selectedGender);
   };
 
   const handleNextWord = () => {
@@ -357,7 +403,7 @@ export default function App() {
     if (!isPlaying) {
       setIsPlaying(true);
       const trackText = runAudioTracks[trackIndex].target[selectedLang] || runAudioTracks[trackIndex].target.spanish;
-      speakTextHelper(trackText, currentLangObj.langCode);
+      speakTextHelper(trackText, currentLangObj.langCode, selectedGender);
     } else {
       setIsPlaying(false);
       if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -374,7 +420,7 @@ export default function App() {
               setTrackIndex(nextIdx);
 
               const nextTrackText = runAudioTracks[nextIdx].target[selectedLang] || runAudioTracks[nextIdx].target.spanish;
-              speakTextHelper(nextTrackText, currentLangObj.langCode);
+              speakTextHelper(nextTrackText, currentLangObj.langCode, selectedGender);
 
               return runAudioTracks[nextIdx].duration;
             } else {
@@ -390,8 +436,78 @@ export default function App() {
       clearInterval(timerRef.current);
     }
     return () => clearInterval(timerRef.current);
-  }, [isPlaying, activeTab, trackIndex, selectedLang, currentLangObj]);
+  }, [isPlaying, activeTab, trackIndex, selectedLang, currentLangObj, selectedGender]);
 
+  // ============================================================================
+  // FIRST-SCREEN SETUP ONBOARDING
+  // ============================================================================
+  if (!isConfigured) {
+    return (
+      <div className={`min-h-screen ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} font-sans flex items-center justify-center p-4`}>
+        <div className={`max-w-md w-full p-8 rounded-[2.5rem] border shadow-2xl space-y-6 ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
+          <div className="text-center space-y-2">
+            <div className="h-16 w-16 mx-auto rounded-3xl bg-emerald-400 flex items-center justify-center text-3xl shadow-xl shadow-emerald-400/20">
+              🏃
+            </div>
+            <h1 className="text-2xl font-black tracking-tight">Welcome to Learn & Run</h1>
+            <p className="text-xs text-slate-400 font-medium">Select your preferred language and voice gender to configure TTS audio before starting.</p>
+          </div>
+
+          {/* STEP 1: CHOOSE LANGUAGE */}
+          <div className="space-y-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-emerald-400 block">
+              1. Choose Language
+            </label>
+            <div className="grid grid-cols-1 gap-2">
+              {languages.map((l) => (
+                <button
+                  key={l.value}
+                  onClick={() => setSelectedLang(l.value)}
+                  className={`p-3.5 rounded-2xl border text-left font-bold text-xs flex items-center justify-between transition ${selectedLang === l.value ? 'border-emerald-400 bg-emerald-400/10 text-emerald-400' : 'border-slate-800 hover:border-slate-700'}`}
+                >
+                  <span>{l.label}</span>
+                  {selectedLang === l.value && <span>✓</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* STEP 2: CHOOSE VOICE GENDER */}
+          <div className="space-y-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-emerald-400 block">
+              2. Choose Voice Gender
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { value: 'female', label: '👩 Female Voice' },
+                { value: 'male', label: '👨 Male Voice' }
+              ].map((g) => (
+                <button
+                  key={g.value}
+                  onClick={() => setSelectedGender(g.value)}
+                  className={`p-3.5 rounded-2xl border text-center font-bold text-xs transition ${selectedGender === g.value ? 'border-emerald-400 bg-emerald-400/10 text-emerald-400' : 'border-slate-800 hover:border-slate-700'}`}
+                >
+                  {g.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* CONFIRM BUTTON */}
+          <button
+            onClick={handleStartLearning}
+            className="w-full py-4 rounded-2xl bg-emerald-400 text-slate-950 font-black text-sm shadow-xl shadow-emerald-400/20 hover:scale-[1.02] active:scale-[0.98] transition"
+          >
+            Start Learning Now →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================================================
+  // MAIN APP DASHBOARD & STUDY TABS
+  // ============================================================================
   return (
     <div className={`min-h-screen ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} font-sans transition-colors duration-300 pb-20 md:pb-8`}>
       {/* HEADER */}
@@ -403,7 +519,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="font-extrabold text-base tracking-tight leading-none">Learn & Run</h1>
-              <span className="text-[10px] text-slate-400 font-medium">Beginner Complete Course</span>
+              <span className="text-[10px] text-slate-400 font-medium">{currentLangObj.label} • {selectedGender === 'female' ? '👩 Voice' : '👨 Voice'}</span>
             </div>
           </div>
 
@@ -429,15 +545,12 @@ export default function App() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <select
-              value={selectedLang}
-              onChange={(e) => setSelectedLang(e.target.value)}
-              className={`rounded-xl border px-3 py-1.5 text-xs font-semibold outline-none transition ${isDark ? 'border-slate-800 bg-slate-900 text-slate-100' : 'border-slate-200 bg-slate-100 text-slate-900'}`}
+            <button
+              onClick={() => setIsConfigured(false)}
+              className={`px-3 py-1.5 rounded-xl border text-xs font-semibold ${isDark ? 'border-slate-800 bg-slate-900 text-slate-300' : 'border-slate-200 bg-slate-100 text-slate-700'}`}
             >
-              {languages.map(l => (
-                <option key={l.value} value={l.value}>{l.label}</option>
-              ))}
-            </select>
+              ⚙️ Settings
+            </button>
 
             <button
               onClick={() => setIsDark(!isDark)}
@@ -524,7 +637,7 @@ export default function App() {
                       onClick={() => speakCurrentWord(singleActiveWord[selectedLang] || singleActiveWord.spanish)}
                       className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-400/20 hover:scale-105 active:scale-95 transition mb-10"
                     >
-                      <IconAudio className="h-4 w-4" /> Listen Pronunciation
+                      <IconAudio className="h-4 w-4" /> Listen Pronunciation ({selectedGender})
                     </button>
 
                     <div className="flex items-center justify-between pt-6 border-t border-slate-800">
@@ -653,7 +766,7 @@ export default function App() {
                       setTimeLeft(tr.duration);
                       if (isPlaying) {
                         const trackText = tr.target[selectedLang] || tr.target.spanish;
-                        speakTextHelper(trackText, currentLangObj.langCode);
+                        speakTextHelper(trackText, currentLangObj.langCode, selectedGender);
                       }
                     }}
                     className={`w-full p-3.5 rounded-2xl border text-left flex items-center justify-between transition ${idx === trackIndex ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800 bg-slate-950/50 hover:border-slate-700'}`}
