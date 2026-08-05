@@ -52,12 +52,12 @@ const playSoundEffect = (type) => {
       });
     }
   } catch (e) {
-    // Audio Context browser policy handling
+    // Audio Policy handling
   }
 };
 
 // ============================================================================
-// DATA & CURRICULUM
+// DATA & CURRICULUM (COMPLETE BEGINNER COURSE: 10 MODULES / 50 WORDS)
 // ============================================================================
 const languages = [
   { value: 'spanish', label: 'Spanish 🇪🇸', langCode: 'es-ES' },
@@ -67,11 +67,10 @@ const languages = [
   { value: 'italian', label: 'Italian 🇮🇹', langCode: 'it-IT' }
 ];
 
-// Modules with exactly 5 words each
 const modulesData = [
   {
     id: 1,
-    title: 'Module 1: Everyday Basics',
+    title: 'Module 1: Basic Greetings',
     words: [
       { id: 1, english: 'Hello', spanish: '¡Hola!', french: 'Bonjour !', german: 'Hallo!', japanese: 'こんにちは！', italian: 'Ciao!', options: ['Hello', 'Goodbye', 'Run'] },
       { id: 2, english: 'Yes', spanish: 'Sí', french: 'Oui', german: 'Ja', japanese: 'はい', italian: 'Sì', options: ['Yes', 'No', 'Please'] },
@@ -82,13 +81,101 @@ const modulesData = [
   },
   {
     id: 2,
-    title: 'Module 2: Runner Actions',
+    title: 'Module 2: Essential Pronouns',
     words: [
-      { id: 6, english: 'Walk', spanish: 'Caminar', french: 'Marcher', german: 'Gehen', japanese: '歩く', italian: 'Camminare', options: ['Walk', 'Run', 'Stop'] },
-      { id: 7, english: 'Run', spanish: 'Correr', french: 'Courir', german: 'Laufen', japanese: '走る', italian: 'Correre', options: ['Run', 'Jump', 'Drink'] },
-      { id: 8, english: 'Stop', spanish: 'Alto', french: 'Stop', german: 'Halt', japanese: '止まれ', italian: 'Stop', options: ['Fast', 'Slow', 'Stop'] },
-      { id: 9, english: 'Start', spanish: 'Empezar', french: 'Commencer', german: 'Starten', japanese: '始める', italian: 'Iniziare', options: ['Start', 'End', 'Rest'] },
-      { id: 10, english: 'Jump', spanish: 'Saltar', french: 'Sauter', german: 'Springen', japanese: '跳ぶ', italian: 'Saltare', options: ['Jump', 'Walk', 'Breathe'] }
+      { id: 6, english: 'I', spanish: 'Yo', french: 'Je', german: 'Ich', japanese: '私', italian: 'Io', options: ['I', 'You', 'We'] },
+      { id: 7, english: 'You', spanish: 'Tú', french: 'Tu', german: 'Du', japanese: 'あなた', italian: 'Tu', options: ['You', 'He', 'They'] },
+      { id: 8, english: 'He', spanish: 'Él', french: 'Il', german: 'Er', japanese: '彼', italian: 'Egli', options: ['He', 'She', 'We'] },
+      { id: 9, english: 'She', spanish: 'Ella', french: 'Elle', german: 'Sie', japanese: '彼女', italian: 'Ella', options: ['He', 'She', 'I'] },
+      { id: 10, english: 'We', spanish: 'Nosotros', french: 'Nous', german: 'Wir', japanese: '私たち', italian: 'Noi', options: ['We', 'They', 'You'] }
+    ]
+  },
+  {
+    id: 3,
+    title: 'Module 3: Core Verbs',
+    words: [
+      { id: 11, english: 'To be', spanish: 'Ser', french: 'Être', german: 'Sein', japanese: '〜である', italian: 'Essere', options: ['To be', 'To have', 'To want'] },
+      { id: 12, english: 'To have', spanish: 'Tener', french: 'Avoir', german: 'Haben', japanese: '持っている', italian: 'Avere', options: ['To bring', 'To have', 'To do'] },
+      { id: 13, english: 'To want', spanish: 'Querer', french: 'Vouloir', german: 'Wollen', japanese: '〜したい', italian: 'Volere', options: ['To want', 'To speak', 'To know'] },
+      { id: 14, english: 'To need', spanish: 'Necesitar', french: 'Avoir besoin', german: 'Brauchen', japanese: '必要である', italian: 'Avere bisogno', options: ['To need', 'To go', 'To eat'] },
+      { id: 15, english: 'To go', spanish: 'Ir', french: 'Aller', german: 'Gehen', japanese: '行く', italian: 'Andare', options: ['To go', 'To stay', 'To see'] }
+    ]
+  },
+  {
+    id: 4,
+    title: 'Module 4: Numbers (1-5)',
+    words: [
+      { id: 16, english: 'One', spanish: 'Uno', french: 'Un', german: 'Eins', japanese: '一 (ichi)', italian: 'Uno', options: ['One', 'Two', 'Three'] },
+      { id: 17, english: 'Two', spanish: 'Dos', french: 'Deux', german: 'Zwei', japanese: '二 (ni)', italian: 'Due', options: ['One', 'Two', 'Four'] },
+      { id: 18, english: 'Three', spanish: 'Tres', french: 'Trois', german: 'Drei', japanese: '三 (san)', italian: 'Tre', options: ['Three', 'Five', 'Two'] },
+      { id: 19, english: 'Four', spanish: 'Cuatro', french: 'Quatre', german: 'Vier', japanese: '四 (yon)', italian: 'Quattro', options: ['Four', 'One', 'Three'] },
+      { id: 20, english: 'Five', spanish: 'Cinco', french: 'Cinq', german: 'Fünf', japanese: '五 (go)', italian: 'Cinque', options: ['Five', 'Four', 'Two'] }
+    ]
+  },
+  {
+    id: 5,
+    title: 'Module 5: Common Actions',
+    words: [
+      { id: 21, english: 'Walk', spanish: 'Caminar', french: 'Marcher', german: 'Gehen', japanese: '歩く', italian: 'Camminare', options: ['Walk', 'Run', 'Stop'] },
+      { id: 22, english: 'Run', spanish: 'Correr', french: 'Courir', german: 'Laufen', japanese: '走る', italian: 'Correre', options: ['Run', 'Jump', 'Drink'] },
+      { id: 23, english: 'Eat', spanish: 'Comer', french: 'Manger', german: 'Essen', japanese: '食べる', italian: 'Mangiare', options: ['Eat', 'Drink', 'Sleep'] },
+      { id: 24, english: 'Drink', spanish: 'Beber', french: 'Boire', german: 'Trinken', japanese: '飲む', italian: 'Bere', options: ['Drink', 'Eat', 'Cook'] },
+      { id: 25, english: 'Sleep', spanish: 'Dormir', french: 'Dormir', german: 'Schlafen', japanese: '寝る', italian: 'Dormire', options: ['Sleep', 'Wake', 'Rest'] }
+    ]
+  },
+  {
+    id: 6,
+    title: 'Module 6: Food & Drink',
+    words: [
+      { id: 26, english: 'Water', spanish: 'Agua', french: 'Eau', german: 'Wasser', japanese: '水', italian: 'Acqua', options: ['Water', 'Milk', 'Bread'] },
+      { id: 27, english: 'Bread', spanish: 'Pan', french: 'Pain', german: 'Brot', japanese: 'パン', italian: 'Pane', options: ['Bread', 'Coffee', 'Fruit'] },
+      { id: 28, english: 'Coffee', spanish: 'Café', french: 'Café', german: 'Kaffee', japanese: 'コーヒー', italian: 'Caffè', options: ['Coffee', 'Tea', 'Water'] },
+      { id: 29, english: 'Tea', spanish: 'Té', french: 'Thé', german: 'Tee', japanese: 'お茶', italian: 'Tè', options: ['Tea', 'Juice', 'Milk'] },
+      { id: 30, english: 'Food', spanish: 'Comida', french: 'Nourriture', german: 'Essen', japanese: '食べ物', italian: 'Cibo', options: ['Food', 'Drink', 'Water'] }
+    ]
+  },
+  {
+    id: 7,
+    title: 'Module 7: Travel & Navigation',
+    words: [
+      { id: 31, english: 'Where', spanish: 'Dónde', french: 'Où', german: 'Wo', japanese: 'どこ', italian: 'Dove', options: ['Where', 'When', 'Why'] },
+      { id: 32, english: 'Here', spanish: 'Aquí', french: 'Ici', german: 'Hier', japanese: 'ここ', italian: 'Qui', options: ['Here', 'There', 'Where'] },
+      { id: 33, english: 'Street', spanish: 'Calle', french: 'Rue', german: 'Straße', japanese: '通り', italian: 'Strada', options: ['Street', 'House', 'Hotel'] },
+      { id: 34, english: 'Hotel', spanish: 'Hotel', french: 'Hôtel', german: 'Hotel', japanese: 'ホテル', italian: 'Hotel', options: ['Hotel', 'Store', 'Airport'] },
+      { id: 35, english: 'Help', spanish: 'Ayuda', french: 'Aide', german: 'Hilfe', japanese: '助けて', italian: 'Aiuto', options: ['Help', 'Stop', 'Go'] }
+    ]
+  },
+  {
+    id: 8,
+    title: 'Module 8: Time & Days',
+    words: [
+      { id: 36, english: 'Today', spanish: 'Hoy', french: 'Aujourd’hui', german: 'Heute', japanese: '今日', italian: 'Oggi', options: ['Today', 'Tomorrow', 'Yesterday'] },
+      { id: 37, english: 'Tomorrow', spanish: 'Mañana', french: 'Demain', german: 'Morgen', japanese: '明日', italian: 'Domani', options: ['Tomorrow', 'Today', 'Now'] },
+      { id: 38, english: 'Now', spanish: 'Ahora', french: 'Maintenant', german: 'Jetzt', japanese: '今', italian: 'Adesso', options: ['Now', 'Later', 'Never'] },
+      { id: 39, english: 'Day', spanish: 'Día', french: 'Jour', german: 'Tag', japanese: '日', italian: 'Giorno', options: ['Day', 'Night', 'Week'] },
+      { id: 40, english: 'Night', spanish: 'Noche', french: 'Nuit', german: 'Nacht', japanese: '夜', italian: 'Notte', options: ['Night', 'Day', 'Morning'] }
+    ]
+  },
+  {
+    id: 9,
+    title: 'Module 9: Key Descriptors',
+    words: [
+      { id: 41, english: 'Good', spanish: 'Bueno', french: 'Bon', german: 'Gut', japanese: '良い', italian: 'Buono', options: ['Good', 'Bad', 'Big'] },
+      { id: 42, english: 'Bad', spanish: 'Malo', french: 'Mauvais', german: 'Schlecht', japanese: '悪い', italian: 'Cattivo', options: ['Bad', 'Good', 'Small'] },
+      { id: 43, english: 'Big', spanish: 'Grande', french: 'Grand', german: 'Groß', japanese: '大きい', italian: 'Grande', options: ['Big', 'Small', 'Fast'] },
+      { id: 44, english: 'Small', spanish: 'Pequeño', french: 'Petit', german: 'Klein', japanese: '小さい', italian: 'Piccolo', options: ['Small', 'Big', 'Slow'] },
+      { id: 45, english: 'Fast', spanish: 'Rápido', french: 'Rapide', german: 'Schnell', japanese: '速い', italian: 'Veloce', options: ['Fast', 'Slow', 'Good'] }
+    ]
+  },
+  {
+    id: 10,
+    title: 'Module 10: Basic Questions',
+    words: [
+      { id: 46, english: 'What', spanish: 'Qué', french: 'Quoi', german: 'Was', japanese: '何', italian: 'Cosa', options: ['What', 'Who', 'Where'] },
+      { id: 47, english: 'Who', spanish: 'Quién', french: 'Qui', german: 'Wer', japanese: '誰', italian: 'Chi', options: ['Who', 'What', 'How'] },
+      { id: 48, english: 'How', spanish: 'Cómo', french: 'Comment', german: 'Wie', japanese: 'どのように', italian: 'Come', options: ['How', 'Why', 'When'] },
+      { id: 49, english: 'When', spanish: 'Cuándo', french: 'Quand', german: 'Wann', japanese: 'いつ', italian: 'Quando', options: ['When', 'Where', 'How'] },
+      { id: 50, english: 'Why', spanish: 'Por qué', french: 'Pourquoi', german: 'Warum', japanese: 'なぜ', italian: 'Perché', options: ['Why', 'What', 'Who'] }
     ]
   }
 ];
@@ -100,22 +187,22 @@ const runAudioTracks = [
 ];
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('learn'); // 'learn' | 'run' | 'dashboard' | 'about'
+  const [activeTab, setActiveTab] = useState('learn');
   const [selectedLang, setSelectedLang] = useState('spanish');
   const [isDark, setIsDark] = useState(true);
 
-  // Module & Single Word Index State
+  // Module & Word Index
   const [currentModuleIdx, setCurrentModuleIdx] = useState(0);
-  const [wordIdx, setWordIdx] = useState(0); // Index 0 to 4 = Words, Index 5 = Quiz Time
+  const [wordIdx, setWordIdx] = useState(0); // 0-4 = Words, 5 = Quiz
   const [quizAnswers, setQuizAnswers] = useState({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
 
-  // User Progress & Gamification
+  // Progress
   const [xp, setXp] = useState(100);
   const [streak, setStreak] = useState(2);
   const [completedModules, setCompletedModules] = useState([]);
 
-  // Runner Audio State
+  // Audio Player State
   const [trackIndex, setTrackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [timeLeft, setTimeLeft] = useState(runAudioTracks[0].duration);
@@ -125,33 +212,11 @@ export default function App() {
   const activeModule = modulesData[currentModuleIdx];
   const singleActiveWord = activeModule ? activeModule.words[wordIdx] : null;
 
-  // Dark Mode Sync
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
     document.body.style.backgroundColor = isDark ? '#020617' : '#f8fafc';
   }, [isDark]);
 
-  // PWA Dynamic Web Manifest
-  useEffect(() => {
-    const manifestJson = {
-      name: "Learn & Run PWA",
-      short_name: "LearnRun",
-      start_url: "/",
-      display: "standalone",
-      background_color: "#020617",
-      theme_color: "#10b981"
-    };
-    const blob = new Blob([JSON.stringify(manifestJson)], { type: 'application/json' });
-    let linkTag = document.querySelector('link[rel="manifest"]');
-    if (!linkTag) {
-      linkTag = document.createElement('link');
-      linkTag.rel = 'manifest';
-      document.head.appendChild(linkTag);
-    }
-    linkTag.href = URL.createObjectURL(blob);
-  }, []);
-
-  // Text To Speech Execution
   const speakText = (text) => {
     if (!('speechSynthesis' in window)) return;
     try {
@@ -165,7 +230,6 @@ export default function App() {
     }
   };
 
-  // Single-Word Step Handlers
   const handleNextWord = () => {
     if (wordIdx < 4) {
       const nextWordIndex = wordIdx + 1;
@@ -173,8 +237,7 @@ export default function App() {
       const nextWord = activeModule.words[nextWordIndex];
       speakText(nextWord[selectedLang] || nextWord.spanish);
     } else {
-      // All 5 words completed -> Move to Quiz
-      setWordIdx(5);
+      setWordIdx(5); // Go to Quiz
     }
   };
 
@@ -187,12 +250,10 @@ export default function App() {
     }
   };
 
-  // Quiz Answer Selection
   const handleQuizSelect = (wIdx, selectedOption) => {
     setQuizAnswers(prev => ({ ...prev, [wIdx]: selectedOption }));
   };
 
-  // Submit 5-Word Module Quiz
   const handleSubmitQuiz = () => {
     let score = 0;
     activeModule.words.forEach((w, idx) => {
@@ -210,7 +271,6 @@ export default function App() {
     setQuizSubmitted(true);
   };
 
-  // Advance to Next Module
   const handleNextModule = () => {
     if (currentModuleIdx < modulesData.length - 1) {
       setCurrentModuleIdx(prev => prev + 1);
@@ -220,7 +280,6 @@ export default function App() {
     }
   };
 
-  // Continuous Playback Engine for Audio Mode
   useEffect(() => {
     if (isPlaying && activeTab === 'run') {
       timerRef.current = setInterval(() => {
@@ -248,17 +307,16 @@ export default function App() {
   return (
     <div className={`min-h-screen ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} font-sans transition-colors duration-300 pb-20 md:pb-8`}>
       
-      {/* APP BAR / HEADER */}
+      {/* HEADER */}
       <header className={`sticky top-0 z-50 backdrop-blur-md border-b ${isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-white/80 border-slate-200'} px-4 py-3.5`}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('learn')}>
             <div className="h-9 w-9 rounded-2xl bg-emerald-400 flex items-center justify-center font-black text-slate-950 text-xl shadow-lg shadow-emerald-400/20">
               🏃
             </div>
             <div>
               <h1 className="font-extrabold text-base tracking-tight leading-none">Learn & Run</h1>
-              <span className="text-[10px] text-slate-400 font-medium">1 Word at a Time Learning</span>
+              <span className="text-[10px] text-slate-400 font-medium">Beginner Complete Course</span>
             </div>
           </div>
 
@@ -293,27 +351,21 @@ export default function App() {
             <button
               onClick={() => setIsDark(!isDark)}
               className={`p-2 rounded-xl border ${isDark ? 'border-slate-800 bg-slate-900 text-slate-300' : 'border-slate-200 bg-slate-100 text-slate-700'}`}
-              aria-label="Toggle Theme"
             >
               <IconTheme className="h-4 w-4" />
             </button>
           </div>
-
         </div>
       </header>
 
-      {/* MAIN CONTENT AREA */}
+      {/* MAIN CONTENT */}
       <main className="max-w-6xl mx-auto px-4 py-8">
-
-        {/* ========================================================================= */}
-        {/* VIEW 1: ONE-WORD AT A TIME + 5-WORD MODULE QUIZ                          */}
-        {/* ========================================================================= */}
         {activeTab === 'learn' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            {/* Left Sidebar: Modules Navigation */}
-            <div className="lg:col-span-4 space-y-3">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 px-1">Curriculum Modules</h2>
+            {/* Modules Sidebar (Full 10 Beginner Modules) */}
+            <div className="lg:col-span-4 space-y-2.5 max-h-[80vh] overflow-y-auto pr-2">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 px-1">Curriculum (10 Modules)</h2>
               {modulesData.map((m, idx) => {
                 const isActive = idx === currentModuleIdx;
                 const isDone = completedModules.includes(m.id);
@@ -327,25 +379,25 @@ export default function App() {
                       setQuizAnswers({});
                       setQuizSubmitted(false);
                     }}
-                    className={`w-full text-left p-4 rounded-3xl border transition flex items-center justify-between ${isActive ? 'border-emerald-500 bg-emerald-500/10' : isDark ? 'border-slate-800 bg-slate-900 hover:border-slate-700' : 'border-slate-200 bg-white hover:border-slate-300'}`}
+                    className={`w-full text-left p-3.5 rounded-2xl border transition flex items-center justify-between ${isActive ? 'border-emerald-500 bg-emerald-500/10' : isDark ? 'border-slate-800 bg-slate-900 hover:border-slate-700' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                   >
                     <div>
                       <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wide">
                         Module {idx + 1}
                       </span>
-                      <h3 className="font-bold text-sm leading-tight text-slate-200">{m.title}</h3>
+                      <h3 className="font-bold text-xs leading-tight text-slate-200">{m.title}</h3>
                     </div>
-                    {isDone && <span className="text-emerald-400 font-bold">✓</span>}
+                    {isDone && <span className="text-emerald-400 font-bold text-xs">✓</span>}
                   </button>
                 );
               })}
             </div>
 
-            {/* Right Main Area: Displays ONLY 1 Word at a time, followed by 5-Word Quiz */}
+            {/* Flashcard & Quiz Card */}
             <div className="lg:col-span-8">
               <div className={`p-6 sm:p-8 rounded-[2.5rem] border shadow-xl relative ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
                 
-                {/* Visual Step Tracker (1 to 5 words, then Quiz) */}
+                {/* Header Track */}
                 <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
                   <div>
                     <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">{activeModule.title}</span>
@@ -358,31 +410,28 @@ export default function App() {
                     {[0, 1, 2, 3, 4].map((step) => (
                       <div
                         key={step}
-                        className={`h-2.5 w-6 rounded-full transition-all ${wordIdx === step ? 'bg-emerald-400 scale-105' : step < wordIdx ? 'bg-emerald-500/40' : 'bg-slate-800'}`}
+                        className={`h-2.5 w-5 rounded-full transition-all ${wordIdx === step ? 'bg-emerald-400 scale-105' : step < wordIdx ? 'bg-emerald-500/40' : 'bg-slate-800'}`}
                       />
                     ))}
-                    <div className={`h-2.5 w-6 rounded-full ml-1 transition-all ${wordIdx === 5 ? 'bg-amber-400 scale-105' : 'bg-slate-800'}`} />
+                    <div className={`h-2.5 w-5 rounded-full ml-1 transition-all ${wordIdx === 5 ? 'bg-amber-400 scale-105' : 'bg-slate-800'}`} />
                   </div>
                 </div>
 
-                {/* STEP 1: SINGLE WORD FLASHCARD VIEW (Shows ONLY 1 word at a time) */}
+                {/* SINGLE WORD DISPLAY */}
                 {wordIdx < 5 && singleActiveWord && (
                   <div className="text-center py-8">
                     <span className="inline-block px-3.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-[10px] font-bold tracking-wider uppercase mb-6">
                       Word {wordIdx + 1} of 5
                     </span>
 
-                    {/* Single Foreign Word */}
                     <div className="text-4xl sm:text-6xl font-black text-emerald-400 my-2 tracking-wide">
                       {singleActiveWord[selectedLang] || singleActiveWord.spanish}
                     </div>
 
-                    {/* English Meaning */}
                     <p className="text-xl font-bold text-slate-300 mb-6">
                       "{singleActiveWord.english}"
                     </p>
 
-                    {/* Audio Pronunciation Button */}
                     <button
                       type="button"
                       onClick={() => speakText(singleActiveWord[selectedLang] || singleActiveWord.spanish)}
@@ -391,7 +440,6 @@ export default function App() {
                       <IconAudio className="h-4 w-4" /> Listen Pronunciation
                     </button>
 
-                    {/* Navigation Buttons */}
                     <div className="flex items-center justify-between pt-6 border-t border-slate-800">
                       <button
                         onClick={handlePrevWord}
@@ -405,18 +453,18 @@ export default function App() {
                         onClick={handleNextWord}
                         className="px-6 py-2.5 rounded-xl bg-emerald-400 text-slate-950 text-xs font-black shadow-md hover:scale-105 transition"
                       >
-                        {wordIdx === 4 ? 'Finish All 5 Words & Start Quiz →' : 'Next Word →'}
+                        {wordIdx === 4 ? 'Finish Words & Start Quiz →' : 'Next Word →'}
                       </button>
                     </div>
                   </div>
                 )}
 
-                {/* STEP 2: 5-WORD QUIZ (Appears ONLY after all 5 words are viewed) */}
+                {/* 5-WORD QUIZ */}
                 {wordIdx === 5 && (
                   <div className="space-y-6">
                     {!quizSubmitted ? (
                       <>
-                        <p className="text-xs text-slate-400 font-medium">All 5 words complete! Select the correct English translation for each word:</p>
+                        <p className="text-xs text-slate-400 font-medium">Select the correct English translation for each word:</p>
                         
                         {activeModule.words.map((word, wIdx) => {
                           const targetWord = word[selectedLang] || word.spanish;
@@ -456,14 +504,14 @@ export default function App() {
                     ) : (
                       <div className="text-center py-8 space-y-4">
                         <div className="text-5xl">🎉</div>
-                        <h3 className="text-2xl font-black">All 5 Questions Completed!</h3>
-                        <p className="text-xs text-slate-400">You earned +50 XP and mastered this module.</p>
+                        <h3 className="text-2xl font-black">Module Mastered!</h3>
+                        <p className="text-xs text-slate-400">You earned +50 XP for completing Module {currentModuleIdx + 1}.</p>
                         <button
                           onClick={handleNextModule}
                           disabled={currentModuleIdx >= modulesData.length - 1}
                           className="px-8 py-3.5 rounded-2xl bg-emerald-400 text-slate-950 font-black text-xs shadow-lg disabled:opacity-30"
                         >
-                          {currentModuleIdx < modulesData.length - 1 ? 'Start Next Module →' : 'All Modules Finished!'}
+                          {currentModuleIdx < modulesData.length - 1 ? 'Start Next Module →' : 'Course Completed! 🏆'}
                         </button>
                       </div>
                     )}
@@ -476,13 +524,10 @@ export default function App() {
           </div>
         )}
 
-        {/* ========================================================================= */}
-        {/* VIEW 2: RUNNER AUDIO MODE PLAYER                                          */}
-        {/* ========================================================================= */}
+        {/* RUNNER AUDIO MODE */}
         {activeTab === 'run' && (
           <div className="max-w-2xl mx-auto space-y-6">
             <div className={`p-8 rounded-[2.5rem] border text-center shadow-2xl ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
-              
               <span className="text-xs font-bold uppercase tracking-widest text-emerald-400 block mb-2">
                 Hands-Free Audio Track {trackIndex + 1} of {runAudioTracks.length}
               </span>
@@ -507,14 +552,11 @@ export default function App() {
                   {isPlaying ? <IconPause className="h-10 w-10" /> : <IconPlay className="h-10 w-10 ml-1" />}
                 </button>
               </div>
-
             </div>
           </div>
         )}
 
-        {/* ========================================================================= */}
-        {/* VIEW 3: DASHBOARD                                                        */}
-        {/* ========================================================================= */}
+        {/* DASHBOARD */}
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
             <h2 className="text-xl font-black">Performance Dashboard</h2>
@@ -540,21 +582,18 @@ export default function App() {
           </div>
         )}
 
-        {/* ========================================================================= */}
-        {/* VIEW 4: ABOUT                                                            */}
-        {/* ========================================================================= */}
+        {/* ABOUT */}
         {activeTab === 'about' && (
           <div className={`p-8 rounded-[2.5rem] border max-w-2xl mx-auto space-y-4 ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
-            <h2 className="text-2xl font-black">About Learn & Run</h2>
+            <h2 className="text-2xl font-black">Complete Beginner Course</h2>
             <p className="text-sm text-slate-400 leading-relaxed">
-              This app guides you through 1 single word at a time. After cycling through all 5 words in a module, a 5-question test reviews your retention.
+              This course consists of 10 structured modules (50 core vocabulary words total), taking you step-by-step from greetings to pronouns, core verbs, numbers, actions, food, travel, and question words.
             </p>
           </div>
         )}
-
       </main>
 
-      {/* MOBILE NAVIGATION BAR */}
+      {/* MOBILE NAV */}
       <nav className={`md:hidden fixed bottom-0 left-0 right-0 border-t ${isDark ? 'bg-slate-950/90 border-slate-800' : 'bg-white/90 border-slate-200'} backdrop-blur-lg px-4 py-2 flex items-center justify-around z-50`}>
         {[
           { id: 'learn', label: 'Study', icon: '🌱' },
@@ -572,7 +611,6 @@ export default function App() {
           </button>
         ))}
       </nav>
-
     </div>
   );
 }
