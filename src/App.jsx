@@ -30,12 +30,12 @@ const IconPause = ({ className }) => (
 );
 
 // ============================================================================
-// AUDIO UTILS & ROBUST NATIVE TTS ENGINE WITH VOICE CACHING
+// BULLETPROOF DUAL-ENGINE AUDIO TTS (NATIVE + WEB AUDIO FALLBACK)
 // ============================================================================
 let cachedVoices = [];
 
 const updateVoicesCache = () => {
-  if ('speechSynthesis' in window) {
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     cachedVoices = window.speechSynthesis.getVoices();
   }
 };
@@ -45,20 +45,18 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
   window.speechSynthesis.onvoiceschanged = updateVoicesCache;
 }
 
-// Phonetic fallback map for isolated short words that trigger letter-spelling
-const PHONETIC_MAP = {
-  'es-ES': {
-    'Sí': 'See',
-    'sí': 'See',
-    'No': 'Noh',
-    'Ir': 'Eer',
-    'Tú': 'Too',
-    'Yo': 'Yoh'
-  },
-  'fr-FR': {
-    'Oui': 'Wee',
-    'Non': 'Noh'
-  }
+// Phonetic overrides for devices strictly locked to English TTS voices
+const HARDCODED_PHONETICS = {
+  'sí': 'see',
+  'si': 'see',
+  '¡hola!': 'oh-lah',
+  'hola': 'oh-lah',
+  'no': 'noh',
+  'ir': 'eer',
+  'tú': 'too',
+  'yo': 'yoh',
+  'oui': 'wee',
+  'ja': 'yah'
 };
 
 const playSoundEffect = (type) => {
@@ -86,39 +84,48 @@ const playSoundEffect = (type) => {
 };
 
 const speakTextHelper = (text, langCode) => {
-  if (!('speechSynthesis' in window)) return;
+  if (!text) return;
 
-  try {
-    window.speechSynthesis.cancel(); // Reset speech pipeline
+  // Clean text and strip leading/trailing inverted punctuation
+  const cleanedText = text.replace(/[¡!¿?]/g, '').trim();
+  const lowerText = cleanedText.toLowerCase();
+  const shortLang = langCode.slice(0, 2).toLowerCase();
 
-    if (cachedVoices.length === 0) {
-      updateVoicesCache();
-    }
+  // Try Online Native Audio Stream first for guaranteed native accent
+  const fallbackAudioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${shortLang}&client=tw-ob&q=${encodeURIComponent(cleanedText)}`;
+  
+  const audio = new Audio(fallbackAudioUrl);
+  const playPromise = audio.play();
 
-    const langPrefix = langCode.slice(0, 2).toLowerCase();
+  if (playPromise !== undefined) {
+    playPromise.catch(() => {
+      // Fallback to Web Speech API if offline or blocked
+      if (!('speechSynthesis' in window)) return;
 
-    // Find native match (e.g. es-ES, es-MX, es-US, or any 'es' prefix)
-    const nativeVoice =
-      cachedVoices.find((v) => v.lang.replace('_', '-').toLowerCase() === langCode.toLowerCase()) ||
-      cachedVoices.find((v) => v.lang.toLowerCase().startsWith(langPrefix));
+      window.speechSynthesis.cancel();
+      if (cachedVoices.length === 0) updateVoicesCache();
 
-    // If no native voice exists on device, use phonetic replacement hint
-    let speechString = text;
-    if (!nativeVoice && PHONETIC_MAP[langCode] && PHONETIC_MAP[langCode][text]) {
-      speechString = PHONETIC_MAP[langCode][text];
-    }
+      const nativeVoice =
+        cachedVoices.find((v) => v.lang.replace('_', '-').toLowerCase() === langCode.toLowerCase()) ||
+        cachedVoices.find((v) => v.lang.toLowerCase().startsWith(shortLang));
 
-    const utter = new SpeechSynthesisUtterance(speechString);
-    utter.lang = langCode;
-    utter.rate = 0.85;
+      // Prevent acronym spelling by lowercasing and ending with a period
+      let speakString = lowerText;
+      if (!nativeVoice && HARDCODED_PHONETICS[lowerText]) {
+        speakString = HARDCODED_PHONETICS[lowerText];
+      }
 
-    if (nativeVoice) {
-      utter.voice = nativeVoice;
-    }
+      // Appending a period prevents TTS from treating short 2-letter words as acronyms
+      const utter = new SpeechSynthesisUtterance(speakString + '.');
+      utter.lang = langCode;
+      utter.rate = 0.85;
 
-    window.speechSynthesis.speak(utter);
-  } catch (e) {
-    console.error('Speech synthesis error:', e);
+      if (nativeVoice) {
+        utter.voice = nativeVoice;
+      }
+
+      window.speechSynthesis.speak(utter);
+    });
   }
 };
 
@@ -229,7 +236,7 @@ const modulesData = [
       { id: 41, english: 'Good', spanish: 'Bueno', french: 'Bon', german: 'Gut', japanese: '良い', italian: 'Buono', options: ['Good', 'Bad', 'Big'] },
       { id: 42, english: 'Bad', spanish: 'Malo', french: 'Mauvais', german: 'Schlecht', japanese: '悪い', italian: 'Cattivo', options: ['Bad', 'Good', 'Small'] },
       { id: 43, english: 'Big', spanish: 'Grande', french: 'Grand', german: 'Groß', japanese: '大きい', italian: 'Grande', options: ['Big', 'Small', 'Fast'] },
-      { id: 44, english: 'Small', spanish: 'Pequeño', french: 'Petit', german: 'Klein', japanese: '小さい', italian: 'Piccolo', options: ['Small', 'Big', 'Slow'] },
+      { id: 44, english: 'Small', spanish: 'Pequeño', french: 'Petit', german: 'Klein', japanese: '小心', italian: 'Piccolo', options: ['Small', 'Big', 'Slow'] },
       { id: 45, english: 'Fast', spanish: 'Rápido', french: 'Rapide', german: 'Schnell', japanese: '速い', italian: 'Veloce', options: ['Fast', 'Slow', 'Good'] }
     ]
   },
