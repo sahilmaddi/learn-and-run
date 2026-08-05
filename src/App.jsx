@@ -56,8 +56,22 @@ const playSoundEffect = (type) => {
   }
 };
 
+// Robust Text-to-Speech Helper
+const speakTextHelper = (text, langCode) => {
+  if (!('speechSynthesis' in window)) return;
+  try {
+    window.speechSynthesis.cancel(); // Reset any frozen queue
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = langCode || 'es-ES';
+    utter.rate = 0.85;
+    window.speechSynthesis.speak(utter);
+  } catch (e) {
+    console.error('Speech synthesis error:', e);
+  }
+};
+
 // ============================================================================
-// DATA & CURRICULUM (COMPLETE BEGINNER COURSE: 10 MODULES / 50 WORDS)
+// DATA & CURRICULUM
 // ============================================================================
 const languages = [
   { value: 'spanish', label: 'Spanish 🇪🇸', langCode: 'es-ES' },
@@ -105,11 +119,11 @@ const modulesData = [
     id: 4,
     title: 'Module 4: Numbers (1-5)',
     words: [
-      { id: 16, english: 'One', spanish: 'Uno', french: 'Un', german: 'Eins', japanese: '一 (ichi)', italian: 'Uno', options: ['One', 'Two', 'Three'] },
-      { id: 17, english: 'Two', spanish: 'Dos', french: 'Deux', german: 'Zwei', japanese: '二 (ni)', italian: 'Due', options: ['One', 'Two', 'Four'] },
-      { id: 18, english: 'Three', spanish: 'Tres', french: 'Trois', german: 'Drei', japanese: '三 (san)', italian: 'Tre', options: ['Three', 'Five', 'Two'] },
-      { id: 19, english: 'Four', spanish: 'Cuatro', french: 'Quatre', german: 'Vier', japanese: '四 (yon)', italian: 'Quattro', options: ['Four', 'One', 'Three'] },
-      { id: 20, english: 'Five', spanish: 'Cinco', french: 'Cinq', german: 'Fünf', japanese: '五 (go)', italian: 'Cinque', options: ['Five', 'Four', 'Two'] }
+      { id: 16, english: 'One', spanish: 'Uno', french: 'Un', german: 'Eins', japanese: '一', italian: 'Uno', options: ['One', 'Two', 'Three'] },
+      { id: 17, english: 'Two', spanish: 'Dos', french: 'Deux', german: 'Zwei', japanese: '二', italian: 'Due', options: ['One', 'Two', 'Four'] },
+      { id: 18, english: 'Three', spanish: 'Tres', french: 'Trois', german: 'Drei', japanese: '三', italian: 'Tre', options: ['Three', 'Five', 'Two'] },
+      { id: 19, english: 'Four', spanish: 'Cuatro', french: 'Quatre', german: 'Vier', japanese: '四', italian: 'Quattro', options: ['Four', 'One', 'Three'] },
+      { id: 20, english: 'Five', spanish: 'Cinco', french: 'Cinq', german: 'Fünf', japanese: '五', italian: 'Cinque', options: ['Five', 'Four', 'Two'] }
     ]
   },
   {
@@ -217,36 +231,31 @@ export default function App() {
     document.body.style.backgroundColor = isDark ? '#020617' : '#f8fafc';
   }, [isDark]);
 
-  const speakText = (text) => {
-    if (!('speechSynthesis' in window)) return;
-    try {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = currentLangObj.langCode;
-      utter.rate = 0.85;
-      window.speechSynthesis.speak(utter);
-    } catch (e) {
-      console.error(e);
-    }
+  // Wrapper for single word speech execution
+  const speakCurrentWord = (text) => {
+    speakTextHelper(text, currentLangObj.langCode);
   };
 
+  // Direct Click Handlers: Directly triggers speech in user-gesture context
   const handleNextWord = () => {
     if (wordIdx < 4) {
-      const nextWordIndex = wordIdx + 1;
-      setWordIdx(nextWordIndex);
-      const nextWord = activeModule.words[nextWordIndex];
-      speakText(nextWord[selectedLang] || nextWord.spanish);
+      const nextWordIdx = wordIdx + 1;
+      setWordIdx(nextWordIdx);
+      const nextWord = activeModule.words[nextWordIdx];
+      const textToSpeak = nextWord[selectedLang] || nextWord.spanish;
+      speakCurrentWord(textToSpeak);
     } else {
-      setWordIdx(5); // Go to Quiz
+      setWordIdx(5); // Transition to Quiz
     }
   };
 
   const handlePrevWord = () => {
     if (wordIdx > 0 && wordIdx < 5) {
-      const prevWordIndex = wordIdx - 1;
-      setWordIdx(prevWordIndex);
-      const prevWord = activeModule.words[prevWordIndex];
-      speakText(prevWord[selectedLang] || prevWord.spanish);
+      const prevWordIdx = wordIdx - 1;
+      setWordIdx(prevWordIdx);
+      const prevWord = activeModule.words[prevWordIdx];
+      const textToSpeak = prevWord[selectedLang] || prevWord.spanish;
+      speakCurrentWord(textToSpeak);
     }
   };
 
@@ -277,9 +286,26 @@ export default function App() {
       setWordIdx(0);
       setQuizAnswers({});
       setQuizSubmitted(false);
+      
+      // Auto-pronounce first word of new module
+      const firstWord = modulesData[currentModuleIdx + 1].words[0];
+      speakCurrentWord(firstWord[selectedLang] || firstWord.spanish);
     }
   };
 
+  // Marathon Lingo Play Toggle
+  const togglePlayMarathon = () => {
+    if (!isPlaying) {
+      setIsPlaying(true);
+      const trackText = runAudioTracks[trackIndex].target[selectedLang] || runAudioTracks[trackIndex].target.spanish;
+      speakTextHelper(trackText, currentLangObj.langCode);
+    } else {
+      setIsPlaying(false);
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+  };
+
+  // Marathon Lingo Timer Loop & Speech trigger on Track Change
   useEffect(() => {
     if (isPlaying && activeTab === 'run') {
       timerRef.current = setInterval(() => {
@@ -288,6 +314,11 @@ export default function App() {
             if (trackIndex < runAudioTracks.length - 1) {
               const nextIdx = trackIndex + 1;
               setTrackIndex(nextIdx);
+              
+              // Pronounce the next track automatically
+              const nextTrackText = runAudioTracks[nextIdx].target[selectedLang] || runAudioTracks[nextIdx].target.spanish;
+              speakTextHelper(nextTrackText, currentLangObj.langCode);
+
               return runAudioTracks[nextIdx].duration;
             } else {
               setIsPlaying(false);
@@ -302,7 +333,7 @@ export default function App() {
       clearInterval(timerRef.current);
     }
     return () => clearInterval(timerRef.current);
-  }, [isPlaying, activeTab, trackIndex]);
+  }, [isPlaying, activeTab, trackIndex, selectedLang, currentLangObj]);
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} font-sans transition-colors duration-300 pb-20 md:pb-8`}>
@@ -329,7 +360,11 @@ export default function App() {
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+                  setIsPlaying(false);
+                  setActiveTab(tab.id);
+                }}
                 className={`px-4 py-2 rounded-full text-xs font-bold transition ${activeTab === tab.id ? 'bg-emerald-400 text-slate-950' : 'text-slate-400 hover:text-slate-200'}`}
               >
                 {tab.label}
@@ -363,7 +398,7 @@ export default function App() {
         {activeTab === 'learn' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            {/* Modules Sidebar (Hidden on Mobile, Visible on Desktop) */}
+            {/* Modules Sidebar */}
             <div className="hidden lg:block lg:col-span-4 space-y-2.5 max-h-[80vh] overflow-y-auto pr-2">
               <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 px-1">Curriculum (10 Modules)</h2>
               {modulesData.map((m, idx) => {
@@ -378,6 +413,8 @@ export default function App() {
                       setWordIdx(0);
                       setQuizAnswers({});
                       setQuizSubmitted(false);
+                      const targetWord = m.words[0];
+                      speakCurrentWord(targetWord[selectedLang] || targetWord.spanish);
                     }}
                     className={`w-full text-left p-3.5 rounded-2xl border transition flex items-center justify-between ${isActive ? 'border-emerald-500 bg-emerald-500/10' : isDark ? 'border-slate-800 bg-slate-900 hover:border-slate-700' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                   >
@@ -434,7 +471,7 @@ export default function App() {
 
                     <button
                       type="button"
-                      onClick={() => speakText(singleActiveWord[selectedLang] || singleActiveWord.spanish)}
+                      onClick={() => speakCurrentWord(singleActiveWord[selectedLang] || singleActiveWord.spanish)}
                       className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-400/20 hover:scale-105 active:scale-95 transition mb-10"
                     >
                       <IconAudio className="h-4 w-4" /> Listen Pronunciation
@@ -472,7 +509,13 @@ export default function App() {
                             <div key={wIdx} className={`p-4 rounded-2xl border ${isDark ? 'border-slate-800 bg-slate-950' : 'border-slate-100 bg-slate-50'}`}>
                               <div className="flex items-center justify-between mb-3">
                                 <span className="font-black text-emerald-400 text-lg">{targetWord}</span>
-                                <span className="text-[10px] text-slate-400">Question {wIdx + 1} of 5</span>
+                                <button
+                                  type="button"
+                                  onClick={() => speakCurrentWord(targetWord)}
+                                  className="text-xs text-slate-400 hover:text-emerald-400 flex items-center gap-1"
+                                >
+                                  <IconAudio className="h-3.5 w-3.5" /> Speak
+                                </button>
                               </div>
                               
                               <div className="grid grid-cols-3 gap-2">
@@ -546,7 +589,7 @@ export default function App() {
 
               <div className="flex items-center justify-center gap-6">
                 <button
-                  onClick={() => setIsPlaying(!isPlaying)}
+                  onClick={togglePlayMarathon}
                   className="h-20 w-20 rounded-full bg-emerald-400 text-slate-950 flex items-center justify-center shadow-2xl shadow-emerald-400/30 hover:scale-105 active:scale-95 transition"
                 >
                   {isPlaying ? <IconPause className="h-10 w-10" /> : <IconPlay className="h-10 w-10 ml-1" />}
@@ -603,7 +646,11 @@ export default function App() {
         ].map(item => (
           <button
             key={item.id}
-            onClick={() => setActiveTab(item.id)}
+            onClick={() => {
+              if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+              setIsPlaying(false);
+              setActiveTab(item.id);
+            }}
             className={`flex flex-col items-center gap-0.5 py-1 ${activeTab === item.id ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}
           >
             <span className="text-base">{item.icon}</span>
