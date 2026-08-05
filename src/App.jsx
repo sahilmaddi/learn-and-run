@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Volume2, ChevronLeft, Globe, Mic, MicOff, CheckCircle2, XCircle } from 'lucide-react';
+import { Volume2, ChevronLeft, Globe, Mic, MicOff, Gauge } from 'lucide-react';
 
 const LANGUAGES = [
   { id: 'es-MX', name: 'Spanish (Latin America)', flag: '🇲🇽', speechLang: 'es-MX' },
@@ -9,52 +9,59 @@ const LANGUAGES = [
   { id: 'it-IT', name: 'Italian', flag: '🇮🇹', speechLang: 'it-IT' }
 ];
 
-const PHONETIC_MAPS = {
-  'es-MX': {
-    'gracias': 'grah-syahs',
-    'hola': 'oh-lah',
-    'por favor': 'por fah-bor',
-    'de nada': 'deh nah-dah'
-  },
-  'es-ES': {
-    'gracias': 'grah-thyahs',
-    'hola': 'oh-lah',
-    'por favor': 'por fah-bor',
-    'de nada': 'deh nah-dah'
-  },
-  'fr-FR': {
-    'bonjour': 'boh-zhoor',
-    'merci': 'mair-see',
-    's’il vous plaît': 'seel voo pleh',
-    'au revoir': 'oh ruh-vwar'
-  },
-  'de-DE': {
-    'danke': 'dahn-kuh',
-    'guten tag': 'goo-ten tahk',
-    'bitte': 'bit-tuh',
-    'auf wiedersehen': 'owf vee-der-zay-en'
-  },
-  'it-IT': {
-    'grazie': 'graht-syeh',
-    'ciao': 'chow',
-    'per favore': 'pair fah-voh-reh',
-    'prego': 'pray-goh'
-  }
+const MARATHON_LINGO = {
+  'es-MX': [
+    { term: 'el muro', meaning: 'The Wall (Mile 20 fatigue)', fallback: 'el moo-roh' },
+    { term: 'ritmo de carrera', meaning: 'Race pace', fallback: 'reet-moh deh kah-reh-rah' },
+    { term: 'hidratación', meaning: 'Hydration station', fallback: 'ee-drah-tah-syohn' },
+    { term: 'meta', meaning: 'Finish line', fallback: 'meh-tah' }
+  ],
+  'es-ES': [
+    { term: 'el muro', meaning: 'The Wall (Mile 20 fatigue)', fallback: 'el moo-roh' },
+    { term: 'ritmo de carrera', meaning: 'Race pace', fallback: 'reet-moh deh kah-reh-rah' },
+    { term: 'hidratación', meaning: 'Hydration station', fallback: 'ee-drah-tah-thyohn' },
+    { term: 'meta', meaning: 'Finish line', fallback: 'meh-tah' }
+  ],
+  'fr-FR': [
+    { term: 'le mur', meaning: 'The Wall', fallback: 'luh myoor' },
+    { term: 'allure de course', meaning: 'Race pace', fallback: 'ah-lyoor duh koors' },
+    { term: 'ravitaillement', meaning: 'Aid station', fallback: 'rah-vee-tye-mah' },
+    { term: 'ligne d’arrivée', meaning: 'Finish line', fallback: 'leen dah-ree-vay' }
+  ],
+  'de-DE': [
+    { term: 'der Hammer-Mann', meaning: 'Hitting the wall', fallback: 'dair hah-mer-mahn' },
+    { term: 'Wettkampftempo', meaning: 'Race pace', fallback: 'vet-kahmpf-tem-poh' },
+    { term: 'Verpflegungsstation', meaning: 'Aid station', fallback: 'fair-pfly-goongs-shta-tsyoohn' },
+    { term: 'Ziellinie', meaning: 'Finish line', fallback: 'tseel-lee-nee-uh' }
+  ],
+  'it-IT': [
+    { term: 'il muro', meaning: 'The Wall', fallback: 'eel moo-roh' },
+    { term: 'ritmo gara', meaning: 'Race pace', fallback: 'reet-moh gah-rah' },
+    { term: 'ristoro', meaning: 'Aid station', fallback: 'ree-stor-oh' },
+    { term: 'traguardo', meaning: 'Finish line', fallback: 'trah-gwahr-doh' }
+  ]
 };
 
-export default function SpeechApp() {
+const PACE_PRESETS = [
+  { label: '0.6x Ultra Slow', rate: 0.6 },
+  { label: '0.8x Marathon', rate: 0.8 },
+  { label: '1.0x Normal', rate: 1.0 }
+];
+
+export default function RunnerSpeechApp() {
   const [selectedLang, setSelectedLang] = useState(null);
   const [inputText, setInputText] = useState('');
   const [availableVoices, setAvailableVoices] = useState([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechRate, setSpeechRate] = useState(0.8); // Default marathon pace
 
   // Speech Recognition States
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
-  const [feedback, setFeedback] = useState(null);
+  const [wordFeedback, setWordFeedback] = useState([]);
   const [isMicSupported, setIsMicSupported] = useState(true);
 
-  // Refs for Speech & Audio Processing
+  // Audio Visualizer Canvas & Audio Context Refs
   const recognitionRef = useRef(null);
   const canvasRef = useRef(null);
   const audioCtxRef = useRef(null);
@@ -62,21 +69,18 @@ export default function SpeechApp() {
   const animFrameRef = useRef(null);
   const mediaStreamRef = useRef(null);
 
-  // Load Synthesis Voices
   useEffect(() => {
     const updateVoices = () => {
       if ('speechSynthesis' in window) {
         setAvailableVoices(window.speechSynthesis.getVoices());
       }
     };
-
     updateVoices();
     if ('speechSynthesis' in window) {
       window.speechSynthesis.onvoiceschanged = updateVoices;
     }
   }, []);
 
-  // Initialize Speech Recognition API
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -91,18 +95,17 @@ export default function SpeechApp() {
     recognition.onstart = () => {
       setIsListening(true);
       setTranscript('');
-      setFeedback(null);
+      setWordFeedback([]);
       startAudioVisualizer();
     };
 
     recognition.onresult = (event) => {
       const resultText = event.results[0][0].transcript;
       setTranscript(resultText);
-      evaluatePronunciation(resultText);
+      evaluateWordByWord(resultText);
     };
 
-    recognition.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
+    recognition.onerror = () => {
       stopAudioVisualizer();
       setIsListening(false);
     };
@@ -115,14 +118,6 @@ export default function SpeechApp() {
     recognitionRef.current = recognition;
   }, [inputText, selectedLang]);
 
-  // Clean up Audio Context and Animation Frames on Unmount
-  useEffect(() => {
-    return () => {
-      stopAudioVisualizer();
-    };
-  }, []);
-
-  // Start Real-Time Web Audio Visualizer
   const startAudioVisualizer = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -132,7 +127,7 @@ export default function SpeechApp() {
       const analyser = audioCtx.createAnalyser();
       const source = audioCtx.createMediaStreamSource(stream);
 
-      analyser.fftSize = 256;
+      analyser.fftSize = 128;
       source.connect(analyser);
 
       audioCtxRef.current = audioCtx;
@@ -140,15 +135,12 @@ export default function SpeechApp() {
 
       drawWaveform();
     } catch (err) {
-      console.error('Microphone access denied for visualizer:', err);
+      console.error('Mic access error:', err);
     }
   };
 
-  // Stop Audio Processing and Release Mic Stream
   const stopAudioVisualizer = () => {
-    if (animFrameRef.current) {
-      cancelAnimationFrame(animFrameRef.current);
-    }
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach((track) => track.stop());
       mediaStreamRef.current = null;
@@ -159,10 +151,8 @@ export default function SpeechApp() {
     }
   };
 
-  // Render Real-Time Frequency Bars to Canvas
   const drawWaveform = () => {
     if (!canvasRef.current || !analyserRef.current) return;
-
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const analyser = analyserRef.current;
@@ -174,25 +164,16 @@ export default function SpeechApp() {
       analyser.getByteFrequencyData(dataArray);
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      const barWidth = (canvas.width / bufferLength) * 2.5;
+      const barWidth = (canvas.width / bufferLength) * 2;
       let x = 0;
 
       for (let i = 0; i < bufferLength; i++) {
         const barHeight = (dataArray[i] / 255) * canvas.height;
-
-        // Dynamic gradient color depending on audio intensity
-        const red = Math.min(255, barHeight + 100);
-        const green = 150;
-        const blue = 255 - barHeight;
-
-        ctx.fillStyle = `rgb(${red},${green},${blue})`;
+        ctx.fillStyle = '#10b981';
         ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-
         x += barWidth + 2;
       }
     };
-
     draw();
   };
 
@@ -204,34 +185,21 @@ export default function SpeechApp() {
       .trim();
   };
 
-  const evaluatePronunciation = (userSpoken) => {
+  const evaluateWordByWord = (userSpoken) => {
     if (!inputText.trim()) return;
 
-    const target = normalizeText(inputText);
-    const spoken = normalizeText(userSpoken);
+    const targetWords = normalizeText(inputText).split(' ');
+    const spokenWords = normalizeText(userSpoken).split(' ');
 
-    if (target === spoken) {
-      setFeedback({ isMatch: true, score: 100 });
-      return;
-    }
+    const feedback = targetWords.map((word) => ({
+      word,
+      isCorrect: spokenWords.includes(word)
+    }));
 
-    const targetWords = target.split(' ');
-    const spokenWords = spoken.split(' ');
-    
-    let matches = 0;
-    targetWords.forEach((word) => {
-      if (spokenWords.includes(word)) matches++;
-    });
-
-    const calculatedScore = Math.round((matches / Math.max(targetWords.length, spokenWords.length)) * 100);
-    
-    setFeedback({
-      isMatch: calculatedScore >= 75,
-      score: calculatedScore
-    });
+    setWordFeedback(feedback);
   };
 
-  const handleSpeak = (textToSpeak = inputText) => {
+  const handleSpeak = (textToSpeak = inputText, overrideRate) => {
     if (!('speechSynthesis' in window) || !selectedLang || !textToSpeak.trim()) return;
 
     window.speechSynthesis.cancel();
@@ -244,19 +212,19 @@ export default function SpeechApp() {
     let textToDeliver = textToSpeak.trim();
     let targetLang = selectedLang.id;
 
-    if (nativeVoice) {
-      textToDeliver = textToDeliver.replace(/\s+([!?])/g, '$1');
-    } else {
-      const map = PHONETIC_MAPS[selectedLang.id] || {};
-      const cleanKey = textToDeliver.toLowerCase();
-      if (map[cleanKey]) {
-        textToDeliver = map[cleanKey];
+    if (!nativeVoice) {
+      const list = MARATHON_LINGO[selectedLang.id] || [];
+      const item = list.find(entry => entry.term.toLowerCase() === textToDeliver.toLowerCase());
+      if (item) {
+        textToDeliver = item.fallback;
         targetLang = 'en-US';
       }
     }
 
     const utterance = new SpeechSynthesisUtterance(textToDeliver);
     utterance.lang = targetLang;
+    utterance.rate = overrideRate || speechRate; // Dynamically uses selected rate
+
     if (nativeVoice) utterance.voice = nativeVoice;
 
     utterance.onstart = () => setIsSpeaking(true);
@@ -278,26 +246,23 @@ export default function SpeechApp() {
   };
 
   const handleGoBack = () => {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-    }
-    if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
-    }
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    if (recognitionRef.current && isListening) recognitionRef.current.stop();
     stopAudioVisualizer();
     setIsSpeaking(false);
     setIsListening(false);
     setSelectedLang(null);
     setInputText('');
     setTranscript('');
-    setFeedback(null);
+    setWordFeedback([]);
   };
 
   return (
     <div style={{ maxWidth: '480px', margin: '2rem auto', fontFamily: 'system-ui, sans-serif' }}>
       {!selectedLang ? (
         <div>
-          <h2>Select a Language</h2>
+          <h2>Marathon Audio Guide</h2>
+          <p style={{ color: '#666', fontSize: '14px' }}>Select target language for running terminology:</p>
           <div style={{ display: 'grid', gap: '8px' }}>
             {LANGUAGES.map((lang) => (
               <button
@@ -323,7 +288,6 @@ export default function SpeechApp() {
         </div>
       ) : (
         <div>
-          {/* Header with Back Navigation */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
             <button
               onClick={handleGoBack}
@@ -353,35 +317,50 @@ export default function SpeechApp() {
               value={inputText}
               onChange={(e) => {
                 setInputText(e.target.value);
-                setFeedback(null);
+                setWordFeedback([]);
                 setTranscript('');
               }}
-              placeholder="Enter phrase to practice..."
-              style={{ padding: '10px', fontSize: '16px', borderRadius: '6px', border: '1px solid #ccc' }}
+              placeholder="Enter marathon phrase..."
+              style={{ padding: '12px', fontSize: '18px', borderRadius: '6px', border: '1px solid #ccc' }}
             />
 
-            {/* Live Audio Visualizer Canvas */}
+            {/* Interactive Speed Toggle Controls */}
+            <div style={{ background: '#f8fafc', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontSize: '13px', fontWeight: 'bold', color: '#475569' }}>
+                <Gauge size={16} /> Select Audio Pace:
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px' }}>
+                {PACE_PRESETS.map((preset) => (
+                  <button
+                    key={preset.rate}
+                    onClick={() => {
+                      setSpeechRate(preset.rate);
+                      if (inputText.trim()) {
+                        handleSpeak(inputText, preset.rate);
+                      }
+                    }}
+                    style={{
+                      padding: '8px 4px',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      borderRadius: '6px',
+                      border: speechRate === preset.rate ? '2px solid #0070f3' : '1px solid #cbd5e1',
+                      background: speechRate === preset.rate ? '#0070f3' : '#fff',
+                      color: speechRate === preset.rate ? '#fff' : '#334155',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {isListening && (
-              <div
-                style={{
-                  background: '#0f172a',
-                  borderRadius: '8px',
-                  padding: '12px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
-              >
-                <canvas
-                  ref={canvasRef}
-                  width={380}
-                  height={60}
-                  style={{ width: '100%', height: '60px' }}
-                />
-                <span style={{ fontSize: '12px', color: '#38bdf8', fontWeight: 500 }}>
-                  Listening to audio stream...
-                </span>
+              <div style={{ background: '#18181b', borderRadius: '8px', padding: '8px', textAlign: 'center' }}>
+                <canvas ref={canvasRef} width={380} height={50} style={{ width: '100%', height: '50px' }} />
+                <span style={{ fontSize: '12px', color: '#10b981' }}>Listening at pace...</span>
               </div>
             )}
 
@@ -394,7 +373,7 @@ export default function SpeechApp() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '8px',
-                  padding: '10px',
+                  padding: '12px',
                   fontSize: '15px',
                   background: isSpeaking ? '#aaa' : '#0070f3',
                   color: '#fff',
@@ -403,8 +382,8 @@ export default function SpeechApp() {
                   cursor: 'pointer'
                 }}
               >
-                <Volume2 size={18} />
-                {isSpeaking ? 'Speaking...' : 'Listen'}
+                <Volume2 size={20} />
+                {isSpeaking ? 'Playing...' : `Play (${speechRate}x)`}
               </button>
 
               <button
@@ -415,84 +394,75 @@ export default function SpeechApp() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '8px',
-                  padding: '10px',
+                  padding: '12px',
                   fontSize: '15px',
                   background: isListening ? '#d97706' : '#10b981',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '6px',
-                  cursor: isMicSupported && inputText.trim() ? 'pointer' : 'not-allowed',
-                  opacity: !isMicSupported || !inputText.trim() ? 0.6 : 1
+                  cursor: 'pointer'
                 }}
               >
-                {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+                {isListening ? <MicOff size={20} /> : <Mic size={20} />}
                 {isListening ? 'Stop' : 'Record'}
               </button>
             </div>
 
-            {!isMicSupported && (
-              <p style={{ fontSize: '12px', color: '#dc2626', margin: 0 }}>
-                Speech recognition is not supported in this browser (Use Chrome or Edge).
-              </p>
-            )}
-
-            {/* Feedback Display */}
-            {transcript && (
-              <div
-                style={{
-                  marginTop: '8px',
-                  padding: '12px',
-                  borderRadius: '8px',
-                  background: feedback?.isMatch ? '#ecfdf5' : '#fef2f2',
-                  border: `1px solid ${feedback?.isMatch ? '#a7f3d0' : '#fecaca'}`
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    {feedback?.isMatch ? (
-                      <CheckCircle2 size={18} color="#059669" />
-                    ) : (
-                      <XCircle size={18} color="#dc2626" />
-                    )}
-                    <span style={{ fontWeight: 'bold', fontSize: '14px', color: feedback?.isMatch ? '#047857' : '#b91c1c' }}>
-                      {feedback?.isMatch ? 'Great Pronunciation!' : 'Try Again'}
+            {wordFeedback.length > 0 && (
+              <div style={{ marginTop: '8px', padding: '12px', borderRadius: '8px', background: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: 'bold' }}>Pronunciation Breakdown:</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {wordFeedback.map((item, index) => (
+                    <span
+                      key={index}
+                      style={{
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        fontWeight: 'bold',
+                        fontSize: '14px',
+                        background: item.isCorrect ? '#dcfce7' : '#fee2e2',
+                        color: item.isCorrect ? '#15803d' : '#b91c1c',
+                        border: `1px solid ${item.isCorrect ? '#86efac' : '#fca5a5'}`
+                      }}
+                    >
+                      {item.word}
                     </span>
-                  </div>
-                  <span style={{ fontSize: '12px', fontWeight: 'bold', color: '#666', marginLeft: 'auto' }}>
-                    Score: {feedback?.score}%
-                  </span>
+                  ))}
                 </div>
-
-                <p style={{ margin: '6px 0 0 0', fontSize: '13px', color: '#374151' }}>
-                  <strong>Heard:</strong> "{transcript}"
-                </p>
               </div>
             )}
 
-            {/* Quick Test Chips */}
             <div style={{ marginTop: '12px' }}>
-              <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>Sample Phrases:</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {Object.keys(PHONETIC_MAPS[selectedLang.id] || {}).map((phrase) => (
+              <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#333', marginBottom: '8px' }}>
+                Official Marathon Lingo:
+              </p>
+              <div style={{ display: 'grid', gap: '8px' }}>
+                {(MARATHON_LINGO[selectedLang.id] || []).map((item) => (
                   <button
-                    key={phrase}
+                    key={item.term}
                     onClick={() => {
-                      setInputText(phrase);
+                      setInputText(item.term);
                       setTranscript('');
-                      setFeedback(null);
-                      handleSpeak(phrase);
+                      setWordFeedback([]);
+                      handleSpeak(item.term);
                     }}
                     style={{
-                      padding: '6px 12px',
-                      fontSize: '14px',
-                      borderRadius: '16px',
-                      border: '1px solid #0070f3',
-                      background: '#f0f7ff',
-                      color: '#0070f3',
-                      cursor: 'pointer'
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '10px 14px',
+                      borderRadius: '6px',
+                      border: '1px solid #e2e8f0',
+                      background: '#fff',
+                      cursor: 'pointer',
+                      textAlign: 'left'
                     }}
                   >
-                    {phrase}
+                    <div>
+                      <div style={{ fontWeight: 'bold', fontSize: '15px', color: '#0f172a' }}>{item.term}</div>
+                      <div style={{ fontSize: '12px', color: '#64748b' }}>{item.meaning}</div>
+                    </div>
+                    <Volume2 size={16} color="#0070f3" />
                   </button>
                 ))}
               </div>
