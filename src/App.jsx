@@ -30,7 +30,7 @@ const IconPause = ({ className }) => (
 );
 
 // ============================================================================
-// AUDIO UTILS
+// AUDIO UTILS & RELIABLE TTS ENGINE
 // ============================================================================
 const playSoundEffect = (type) => {
   try {
@@ -52,19 +52,34 @@ const playSoundEffect = (type) => {
       });
     }
   } catch (e) {
-    // Audio Policy handling
+    console.warn('Audio Context trigger failed:', e);
   }
 };
 
-// Robust Text-to-Speech Helper
+// Fixed Web Speech API helper (handles async voice loading & stuck queues)
 const speakTextHelper = (text, langCode) => {
   if (!('speechSynthesis' in window)) return;
+  
   try {
-    window.speechSynthesis.cancel(); // Reset any frozen queue
+    window.speechSynthesis.cancel(); // Flush hanging utterances
+
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = langCode || 'es-ES';
     utter.rate = 0.85;
-    window.speechSynthesis.speak(utter);
+
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      const match = voices.find(v => v.lang === langCode || v.lang.startsWith(langCode.slice(0, 2)));
+      if (match) utter.voice = match;
+      window.speechSynthesis.speak(utter);
+    } else {
+      window.speechSynthesis.onvoiceschanged = () => {
+        const asyncVoices = window.speechSynthesis.getVoices();
+        const match = asyncVoices.find(v => v.lang === langCode || v.lang.startsWith(langCode.slice(0, 2)));
+        if (match) utter.voice = match;
+        window.speechSynthesis.speak(utter);
+      };
+    }
   } catch (e) {
     console.error('Speech synthesis error:', e);
   }
@@ -226,6 +241,16 @@ export default function App() {
   const activeModule = modulesData[currentModuleIdx];
   const singleActiveWord = activeModule ? activeModule.words[wordIdx] : null;
 
+  // Initialize Voices on Mount
+  useEffect(() => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+      };
+    }
+  }, []);
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
     document.body.style.backgroundColor = isDark ? '#020617' : '#f8fafc';
@@ -287,7 +312,6 @@ export default function App() {
       setQuizAnswers({});
       setQuizSubmitted(false);
       
-      // Auto-pronounce first word of new module
       const firstWord = modulesData[currentModuleIdx + 1].words[0];
       speakCurrentWord(firstWord[selectedLang] || firstWord.spanish);
     }
@@ -315,7 +339,6 @@ export default function App() {
               const nextIdx = trackIndex + 1;
               setTrackIndex(nextIdx);
               
-              // Pronounce the next track automatically
               const nextTrackText = runAudioTracks[nextIdx].target[selectedLang] || runAudioTracks[nextIdx].target.spanish;
               speakTextHelper(nextTrackText, currentLangObj.langCode);
 
@@ -613,13 +636,13 @@ export default function App() {
               <div className={`p-6 rounded-3xl border ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
                 <div className="text-3xl mb-2">⚡</div>
                 <div className="text-xs text-slate-400 font-semibold uppercase">Total XP</div>
-                <div className="text-2xl font-black text-emerald-400">{xp} XP</div>
+                <div className="text-2xl font-black text-slate-100">{xp} XP</div>
               </div>
 
               <div className={`p-6 rounded-3xl border ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
-                <div className="text-3xl mb-2">🏆</div>
-                <div className="text-xs text-slate-400 font-semibold uppercase">Completed Modules</div>
-                <div className="text-2xl font-black text-slate-100">{completedModules.length} / {modulesData.length}</div>
+                <div className="text-3xl mb-2">🎓</div>
+                <div className="text-xs text-slate-400 font-semibold uppercase">Completed</div>
+                <div className="text-2xl font-black text-slate-100">{completedModules.length} / 10</div>
               </div>
             </div>
           </div>
@@ -627,37 +650,40 @@ export default function App() {
 
         {/* ABOUT */}
         {activeTab === 'about' && (
-          <div className={`p-8 rounded-[2.5rem] border max-w-2xl mx-auto space-y-4 ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
-            <h2 className="text-2xl font-black">Complete Beginner Course</h2>
-            <p className="text-sm text-slate-400 leading-relaxed">
-              This course consists of 10 structured modules (50 core vocabulary words total), taking you step-by-step from greetings to pronouns, core verbs, numbers, actions, food, travel, and question words.
+          <div className={`p-8 rounded-[2.5rem] border ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'} space-y-4`}>
+            <h2 className="text-2xl font-black">About Learn & Run</h2>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              Learn & Run combines interactive vocabulary flashcards with hands-free marathon lingo audio tracks.
+              Train your body and mind at the same time with paced voice guidance in 5 target languages.
             </p>
           </div>
         )}
+
       </main>
 
-      {/* MOBILE NAV */}
-      <nav className={`md:hidden fixed bottom-0 left-0 right-0 border-t ${isDark ? 'bg-slate-950/90 border-slate-800' : 'bg-white/90 border-slate-200'} backdrop-blur-lg px-4 py-2 flex items-center justify-around z-50`}>
+      {/* MOBILE BOTTOM NAVIGATION */}
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-50 border-t ${isDark ? 'bg-slate-950/95 border-slate-800' : 'bg-white/95 border-slate-200'} px-6 py-3 flex justify-around`}>
         {[
           { id: 'learn', label: 'Study', icon: '🌱' },
-          { id: 'run', label: 'Marathon Lingo', icon: '🎧' },
+          { id: 'run', label: 'Lingo', icon: '🎧' },
           { id: 'dashboard', label: 'Stats', icon: '📊' },
           { id: 'about', label: 'About', icon: 'ℹ️' }
-        ].map(item => (
+        ].map(tab => (
           <button
-            key={item.id}
+            key={tab.id}
             onClick={() => {
               if ('speechSynthesis' in window) window.speechSynthesis.cancel();
               setIsPlaying(false);
-              setActiveTab(item.id);
+              setActiveTab(tab.id);
             }}
-            className={`flex flex-col items-center gap-0.5 py-1 ${activeTab === item.id ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}
+            className={`flex flex-col items-center gap-1 ${activeTab === tab.id ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}
           >
-            <span className="text-base">{item.icon}</span>
-            <span className="text-[10px]">{item.label}</span>
+            <span className="text-base">{tab.icon}</span>
+            <span className="text-[10px]">{tab.label}</span>
           </button>
         ))}
       </nav>
+
     </div>
   );
 }
