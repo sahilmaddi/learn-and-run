@@ -56,12 +56,11 @@ const playSoundEffect = (type) => {
   }
 };
 
-// Fixed Web Speech API helper (handles async voice loading & stuck queues)
 const speakTextHelper = (text, langCode) => {
   if (!('speechSynthesis' in window)) return;
   
   try {
-    window.speechSynthesis.cancel(); // Flush hanging utterances
+    window.speechSynthesis.cancel();
 
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = langCode || 'es-ES';
@@ -618,54 +617,108 @@ export default function App() {
                   {isPlaying ? <IconPause className="h-10 w-10" /> : <IconPlay className="h-10 w-10 ml-1" />}
                 </button>
               </div>
+
+              {/* TRACK SELECTOR LIST */}
+              <div className="mt-8 pt-6 border-t border-slate-800 text-left space-y-3">
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Audio Cues Queue</h4>
+                {runAudioTracks.map((tr, idx) => (
+                  <button
+                    key={tr.id}
+                    onClick={() => {
+                      setTrackIndex(idx);
+                      setTimeLeft(tr.duration);
+                      if (isPlaying) {
+                        const trackText = tr.target[selectedLang] || tr.target.spanish;
+                        speakTextHelper(trackText, currentLangObj.langCode);
+                      }
+                    }}
+                    className={`w-full p-3.5 rounded-2xl border text-left flex items-center justify-between transition ${idx === trackIndex ? 'border-emerald-500 bg-emerald-500/10' : 'border-slate-800 bg-slate-950/50 hover:border-slate-700'}`}
+                  >
+                    <div>
+                      <span className="text-[10px] font-bold text-emerald-400 uppercase block">Cue {idx + 1}</span>
+                      <p className="text-xs font-bold">{tr.target[selectedLang] || tr.target.spanish}</p>
+                    </div>
+                    <span className="text-xs text-slate-400 font-medium">{tr.duration}s</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
-        {/* DASHBOARD */}
+        {/* DASHBOARD TAB */}
         {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            <h2 className="text-xl font-black">Performance Dashboard</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className={`p-6 rounded-3xl border ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
-                <div className="text-3xl mb-2">🔥</div>
-                <div className="text-xs text-slate-400 font-semibold uppercase">Streak</div>
-                <div className="text-2xl font-black text-slate-100">{streak} Days</div>
+          <div className="max-w-4xl mx-auto space-y-6">
+            <div className={`p-8 rounded-[2.5rem] border ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
+              <h2 className="text-2xl font-black mb-6">Your Progress Overview</h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+                  <span className="text-xs text-emerald-400 font-bold uppercase tracking-wider block">Total XP</span>
+                  <p className="text-3xl font-black text-emerald-400 mt-1">{xp} XP</p>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+                  <span className="text-xs text-amber-400 font-bold uppercase tracking-wider block">Day Streak</span>
+                  <p className="text-3xl font-black text-amber-400 mt-1">{streak} Days 🔥</p>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+                  <span className="text-xs text-blue-400 font-bold uppercase tracking-wider block">Completed</span>
+                  <p className="text-3xl font-black text-blue-400 mt-1">{completedModules.length} / 10</p>
+                </div>
               </div>
 
-              <div className={`p-6 rounded-3xl border ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
-                <div className="text-3xl mb-2">⚡</div>
-                <div className="text-xs text-slate-400 font-semibold uppercase">Total XP</div>
-                <div className="text-2xl font-black text-slate-100">{xp} XP</div>
-              </div>
-
-              <div className={`p-6 rounded-3xl border ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
-                <div className="text-3xl mb-2">🎓</div>
-                <div className="text-xs text-slate-400 font-semibold uppercase">Completed</div>
-                <div className="text-2xl font-black text-slate-100">{completedModules.length} / 10</div>
+              <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">Module Completion Status</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {modulesData.map((m) => {
+                  const done = completedModules.includes(m.id);
+                  return (
+                    <div key={m.id} className={`p-4 rounded-xl border flex items-center justify-between ${done ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-slate-800 bg-slate-950/40'}`}>
+                      <span className="text-xs font-bold text-slate-300">{m.title}</span>
+                      <span className={`text-xs font-bold ${done ? 'text-emerald-400' : 'text-slate-500'}`}>{done ? 'Completed ✓' : 'Incomplete'}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
         )}
 
-        {/* ABOUT */}
+        {/* ABOUT TAB */}
         {activeTab === 'about' && (
-          <div className={`p-8 rounded-[2.5rem] border ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'} space-y-4`}>
-            <h2 className="text-2xl font-black">About Learn & Run</h2>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              Learn & Run combines interactive vocabulary flashcards with hands-free marathon lingo audio tracks.
-              Train your body and mind at the same time with paced voice guidance in 5 target languages.
-            </p>
+          <div className="max-w-2xl mx-auto space-y-6">
+            <div className={`p-8 rounded-[2.5rem] border ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
+              <h2 className="text-2xl font-black mb-4">About Learn & Run</h2>
+              <p className="text-sm text-slate-400 leading-relaxed mb-4">
+                Learn & Run combines structured flashcard curriculum learning with hands-free audio cueing designed for workouts, runs, and active study.
+              </p>
+              <div className="space-y-3 pt-4 border-t border-slate-800">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">🌱</span>
+                  <div>
+                    <h4 className="text-xs font-bold">10 Complete Modules</h4>
+                    <p className="text-[11px] text-slate-400">Master 50 core beginner words with instant TTS pronunciation and quizzes.</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">🎧</span>
+                  <div>
+                    <h4 className="text-xs font-bold">Marathon Lingo Mode</h4>
+                    <p className="text-[11px] text-slate-400">Timed audio cues spoken in target languages to sync language acquisition with exercise routines.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
-
       </main>
 
       {/* MOBILE BOTTOM NAVIGATION */}
-      <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-50 border-t ${isDark ? 'bg-slate-950/95 border-slate-800' : 'bg-white/95 border-slate-200'} px-6 py-3 flex justify-around`}>
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 border-t ${isDark ? 'bg-slate-950/90 border-slate-800' : 'bg-white/90 border-slate-200'} backdrop-blur-md px-4 py-2.5 flex items-center justify-around z-50`}>
         {[
           { id: 'learn', label: 'Study', icon: '🌱' },
-          { id: 'run', label: 'Lingo', icon: '🎧' },
+          { id: 'run', label: 'Marathon', icon: '🎧' },
           { id: 'dashboard', label: 'Stats', icon: '📊' },
           { id: 'about', label: 'About', icon: 'ℹ️' }
         ].map(tab => (
@@ -676,10 +729,10 @@ export default function App() {
               setIsPlaying(false);
               setActiveTab(tab.id);
             }}
-            className={`flex flex-col items-center gap-1 ${activeTab === tab.id ? 'text-emerald-400 font-bold' : 'text-slate-400'}`}
+            className={`flex flex-col items-center gap-1 text-[10px] font-bold ${activeTab === tab.id ? 'text-emerald-400' : 'text-slate-400'}`}
           >
             <span className="text-base">{tab.icon}</span>
-            <span className="text-[10px]">{tab.label}</span>
+            {tab.label}
           </button>
         ))}
       </nav>
