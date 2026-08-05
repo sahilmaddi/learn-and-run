@@ -1,0 +1,480 @@
+
+const chapterOptions = [
+  {
+const chapterOptions = [
+  {
+    id: "foundation",
+    title: "Foundation",
+    description: "Build your running foundation with proper form and basics",
+    levels: ["beginner", "intermediate", "advanced"]
+  },
+  {
+    id: "endurance",
+    title: "Endurance",
+    description: "Increase your stamina and endurance capacity",
+    levels: ["beginner", "intermediate", "advanced"]
+  },
+  {
+    id: "strength",
+    title: "Strength",
+    description: "Build strength and power for better running performance",
+    levels: ["beginner", "intermediate", "advanced"]
+  }
+];
+    id: "foundation",
+    title: "Foundation",
+    description: "Build your running foundation with proper form and basics",
+    levels: ["beginner", "intermediate", "advanced"]
+  },
+  {
+    id: "endurance",
+    title: "Endurance",
+    description: "Increase your stamina and endurance capacity",
+    levels: ["beginner", "intermediate", "advanced"]
+  },
+  {
+    id: "strength",
+    title: "Strength",
+    description: "Build strength and power for better running performance",
+    levels: ["beginner", "intermediate", "advanced"]
+  }
+];
+
+function App() {
+  const [step, setStep] = useState(0);
+  const [language, setLanguage] = useState(languageOptions[0].value);
+  const [name, setName] = useState('Runner');
+  const [levelIndex, setLevelIndex] = useState(0);
+  const [completed, setCompleted] = useState([]);
+  const [isDark, setIsDark] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDark);
+    document.body.style.backgroundColor = isDark ? '#020617' : '#f8fafc';
+    document.body.style.color = isDark ? '#f8fafc' : '#0f172a';
+  }, [isDark]);
+
+  const phrase = useMemo(
+    () => languageOptions.find((item) => item.value === language) ?? languageOptions[0],
+    [language]
+  );
+
+  const level = levelOptions[levelIndex];
+  const earnedCount = completed.length;
+  const shellClasses = isDark
+    ? 'bg-slate-950 text-slate-100'
+    : 'bg-slate-50 text-slate-900';
+  const surfaceClasses = isDark
+    ? 'border-slate-800 bg-slate-950/95 text-slate-100 shadow-[0_30px_80px_-40px_rgba(15,23,42,0.45)] ring-slate-700'
+    : 'border-slate-200 bg-white/95 text-slate-900 shadow-[0_20px_60px_-30px_rgba(15,23,42,0.25)] ring-slate-200';
+  const mutedText = isDark ? 'text-slate-400' : 'text-slate-600';
+  const secondaryText = isDark ? 'text-slate-300' : 'text-slate-700';
+  const actionButton = 'transition duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.98]';
+  const activePanel = isDark ? 'ring-2 ring-emerald-400/30 shadow-[0_30px_80px_-40px_rgba(16,185,129,0.35)]' : 'ring-2 ring-emerald-400/20 shadow-[0_30px_80px_-40px_rgba(16,185,129,0.16)]';
+
+  const next = () => {
+    if (isTransitioning) return;
+
+    setIsTransitioning(true);
+    setTimeout(() => setIsTransitioning(false), 180);
+    scrollToSection('plan');
+
+    setStep((current) => {
+      const nextStep = Math.min(current + 1, steps.length - 1);
+      if (current === 2) {
+        const currentLevel = levelOptions[levelIndex].id;
+        setCompleted((prev) => (prev.includes(currentLevel) ? prev : [...prev, currentLevel]));
+      }
+      return nextStep;
+    });
+  };
+  const prev = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setTimeout(() => setIsTransitioning(false), 180);
+    scrollToSection('plan');
+    setStep((current) => Math.max(current - 1, 0));
+  };
+
+  const [voices, setVoices] = useState([]);
+  const [selectedVoice, setSelectedVoice] = useState('');
+
+  const speakPhrase = () => {
+    if (!('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(phrase.phrase);
+      utter.lang = phrase.langCode || 'en-US';
+      if (selectedVoice) {
+        const v = voices.find((x) => x.name === selectedVoice);
+        if (v) utter.voice = v;
+      }
+      utter.rate = 0.95;
+      window.speechSynthesis.speak(utter);
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    const load = () => {
+      const avail = window.speechSynthesis.getVoices() || [];
+      setVoices(avail);
+      if (!selectedVoice && avail.length) {
+        const match = avail.find((v) => v.lang && phrase.langCode && v.lang.toLowerCase().startsWith(phrase.langCode.toLowerCase().slice(0,2)));
+        if (match) setSelectedVoice(match.name);
+      }
+    };
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+    return () => { window.speechSynthesis.onvoiceschanged = null; };
+  }, [phrase.langCode, selectedVoice, voices.length]);
+
+  const scrollToSection = (id) => {
+    const target = document.getElementById(id);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const startSession = () => {
+    setStep(1);
+    scrollToSection('plan');
+  };
+
+  return (
+    <div className={`min-h-screen transition-colors duration-300 ${shellClasses}`}>
+      <div className="w-full px-4 py-6 sm:px-6 lg:px-8">
+        <div className={`mb-6 flex items-center justify-between rounded-[2rem] border px-5 py-3 shadow-sm backdrop-blur ${surfaceClasses}`}>
+          <div className={`text-sm uppercase tracking-[0.3em] ${mutedText}`}>Learn and Run</div>
+          <button
+            type="button"
+            className={`inline-flex items-center justify-center rounded-full bg-emerald-400 p-3 text-slate-950 ${actionButton} hover:bg-emerald-300`}
+            onClick={() => setIsDark((current) => !current)}>
+            <IconTheme className="h-5 w-5" />
+          </button>
+        </div>
+
+        <header className={`flex flex-col gap-6 rounded-[2rem] border p-6 shadow-sm backdrop-blur sm:p-8 lg:flex-row lg:items-center lg:justify-between ${surfaceClasses}`}>
+          <div className="space-y-4">
+            <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold uppercase tracking-[0.25em] ring-1 ${isDark ? 'bg-slate-800 text-slate-100 ring-slate-700' : 'bg-slate-100 text-slate-900 ring-slate-200'}`}>
+              <IconSpark className="h-4 w-4 text-emerald-400" />
+              Learn and Run
+            </div>
+            
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <nav className={`hidden items-center gap-4 text-sm font-medium lg:flex ${mutedText}`}>
+              <a className="inline-flex items-center gap-2 transition hover:text-white" href="#dashboard" onClick={(e) => { e.preventDefault(); scrollToSection('dashboard'); }}><IconDashboard className="h-4 w-4" />Dashboard</a>
+              <a className="inline-flex items-center gap-2 transition hover:text-white" href="#plan" onClick={(e) => { e.preventDefault(); scrollToSection('plan'); }}><IconPlan className="h-4 w-4" />Plan</a>
+              <a className="inline-flex items-center gap-2 transition hover:text-white" href="#badges" onClick={(e) => { e.preventDefault(); scrollToSection('badges'); }}><IconBadge className="h-4 w-4" />Badges</a>
+            </nav>
+          </div>
+        </header>
+
+        <section id="learn" className={`mt-6 rounded-[2rem] p-6 ${surfaceClasses}`}>
+          <div className="max-w-3xl mx-auto space-y-4">
+            <h2 className={`text-2xl font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>Let us Learn and Run</h2>
+            <p className={`text-base ${secondaryText}`}>Pick a language below, then start a short guided run session with language prompts and motivational cues.</p>
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                <div className={`rounded-[2rem] border p-4 ${isDark ? 'border-slate-800 bg-slate-950/80' : 'border-slate-200 bg-slate-50'} shadow-sm`}> 
+                  <div className="relative">
+                    <select value={language} onChange={(e) => setLanguage(e.target.value)} className={`w-full rounded-3xl border appearance-none pl-4 pr-12 py-3 text-base outline-none ${isDark ? 'border-slate-800 bg-slate-900 text-slate-100' : 'border-slate-200 bg-white text-slate-900'}`}>
+                      {languageOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                    <svg className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                      <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <select value={selectedVoice} onChange={(e) => setSelectedVoice(e.target.value)} className={`w-full rounded-2xl border px-3 py-2 text-sm outline-none ${isDark ? 'border-slate-800 bg-slate-900 text-slate-100' : 'border-slate-200 bg-white text-slate-900'}`}>
+                      <option value="">(Auto) Default voice</option>
+                      {voices.map((v) => (
+                        <option key={v.name} value={v.name}>{v.name} — {v.lang}</option>
+                      ))}
+                    </select>
+                    <button type="button" onClick={() => {
+                      const avail = window.speechSynthesis.getVoices() || [];
+                      setVoices(avail);
+                    }} className={`rounded-full px-3 py-2 text-sm ring-1 ${actionButton} hover:ring-2`}>
+                      Refresh
+                    </button>
+                    <button type="button" onClick={speakPhrase} className={`rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 ${actionButton}`}>
+                      Test Voice
+                    </button>
+                  </div>
+                </div>
+                <div className="flex justify-start sm:justify-end">
+                  <button type="button" onClick={startSession} className={`rounded-full bg-emerald-400 px-5 py-3 font-semibold text-slate-950 ${actionButton}`}>Start Run Session</button>
+                </div>
+                <div className={`mt-4 flex items-center gap-4 rounded-2xl p-4 ${isDark ? 'bg-slate-900/80' : 'bg-slate-50'} border ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+                  <img src={phrase.image} alt={phrase.label} className="h-16 w-16 rounded-md object-cover shadow-sm" />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{phrase.label}</p>
+                        <p className={`text-sm ${secondaryText}`}>{phrase.translation}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button type="button" onClick={speakPhrase} className={`rounded-full p-2 bg-emerald-400 text-slate-900 hover:bg-emerald-300 ${actionButton}`}>
+                          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M11 5 6 9H3v6h3l5 4V5Z" />
+                            <path d="M14.5 8.5a3.5 3.5 0 0 1 0 7" />
+                            <path d="M17.5 6.5a5.5 5.5 0 0 1 0 11" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <p className={`mt-2 text-sm ${mutedText}`}><span className="font-medium">Pronunciation:</span> {phrase.pronunciation} <span className="mx-2 text-slate-400">•</span> <span className="font-mono text-sm text-slate-400">{phrase.ipa}</span></p>
+                  </div>
+                </div>
+              </div>
+          </div>
+        </section>
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+          <aside className={`hidden rounded-[2rem] border p-6 shadow-2xl ring-1 lg:block ${surfaceClasses}`}>
+            <div className="space-y-8">
+              <div>
+                <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Quick menu</p>
+                <div className="mt-6 space-y-3">
+                  <a href="#dashboard" className="flex items-center gap-3 rounded-3xl border border-slate-800 bg-slate-900/80 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:border-emerald-400 hover:bg-slate-800" onClick={(e) => { e.preventDefault(); scrollToSection('dashboard'); }}>
+                    <IconDashboard className="h-5 w-5 text-emerald-400" />
+                    Dashboard
+                  </a>
+                  <a href="#plan" className="flex items-center gap-3 rounded-3xl border border-slate-800 bg-slate-900/80 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:border-emerald-400 hover:bg-slate-800" onClick={(e) => { e.preventDefault(); scrollToSection('plan'); }}>
+                    <IconPlan className="h-5 w-5 text-emerald-400" />
+                    Run plan
+                  </a>
+                  <a href="#badges" className="flex items-center gap-3 rounded-3xl border border-slate-800 bg-slate-900/80 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:border-emerald-400 hover:bg-slate-800" onClick={(e) => { e.preventDefault(); scrollToSection('badges'); }}>
+                    <IconBadge className="h-5 w-5 text-emerald-400" />
+                    Badges
+                  </a>
+                  <a href="#phrase" className="flex items-center gap-3 rounded-3xl border border-slate-800 bg-slate-900/80 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:border-emerald-400 hover:bg-slate-800" onClick={(e) => { e.preventDefault(); scrollToSection('learn'); }}>
+                    <IconSpark className="h-5 w-5 text-emerald-400" />
+                    Phrase preview
+                  </a>
+                </div>
+              </div>
+              <div className={`rounded-[1.75rem] p-5 ${isDark ? 'bg-slate-900 text-slate-300' : 'bg-slate-100 text-slate-700'}`}>
+                <p className={`text-sm uppercase tracking-[0.3em] ${mutedText}`}>Tip</p>
+                <p className="mt-3 text-sm leading-6">Use the sidebar for quick navigation on desktop, and enjoy responsive animated cards across every device.</p>
+              </div>
+            </div>
+          </aside>
+
+          <div className="space-y-6">
+            <section id="dashboard" className="grid gap-6 xl:grid-cols-[1.8fr_1fr]">
+              <div className={`rounded-[2rem] p-6 shadow-2xl ring-1 backdrop-blur sm:p-8 transition duration-500 ease-out hover:-translate-y-1 hover:shadow-2xl ${surfaceClasses}`}>
+                <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="space-y-4">
+                    <p className="text-sm uppercase tracking-[0.3em] text-slate-400">Performance</p>
+                    <div className="flex flex-wrap gap-3 text-white sm:gap-4">
+                      <div className="rounded-3xl bg-slate-800/90 px-5 py-4 shadow-sm transition duration-500 ease-out hover:-translate-y-1 hover:shadow-2xl">
+                        <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-500">
+                          <IconBadge className="h-4 w-4" />
+                          <span>Badges</span>
+                        </div>
+                        <p className="mt-2 text-3xl font-semibold">{earnedCount}</p>
+                      </div>
+                      <div className="rounded-3xl bg-slate-800/90 px-5 py-4 shadow-sm transition duration-500 ease-out hover:-translate-y-1 hover:shadow-2xl">
+                        <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-500">
+                          <IconRun className="h-4 w-4" />
+                          <span>Level</span>
+                        </div>
+                        <p className="mt-2 text-3xl font-semibold">{level.title}</p>
+                      </div>
+                    </div>
+                  </div>
+                    <div className={`rounded-[1.5rem] p-5 shadow-inner ring-1 transition duration-500 ease-out hover:-translate-y-1 hover:shadow-2xl ${isDark ? 'bg-slate-950/70 text-slate-200 ring-slate-700' : 'bg-slate-100 text-slate-800 ring-slate-200'}`}>
+                      <p className={`text-sm uppercase tracking-[0.3em] ${mutedText}`}>Today’s phrase</p>
+                      <p className={`mt-4 text-2xl font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{phrase.phrase}</p>
+                      <p className={`mt-2 text-sm ${secondaryText}`}>{phrase.translation}</p>
+                      <p className={`mt-1 text-sm ${mutedText}`}>{phrase.pronunciation}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-6">
+                <div className={`rounded-[2rem] border p-6 shadow-sm ring-1 transition duration-500 ease-out hover:-translate-y-1 hover:shadow-2xl ${surfaceClasses}`}>
+                  <p className={`text-sm uppercase tracking-[0.3em] ${mutedText}`}>Session summary</p>
+                  <h2 className="mt-4 text-2xl font-semibold text-white">Ready for your next run?</h2>
+                  <p className="mt-3 text-sm leading-6 text-slate-400">Choose your training intensity, personalize the experience, and collect badges every time you complete a session.</p>
+                </div>
+                <div className={`rounded-[2rem] border p-6 shadow-sm ring-1 transition duration-500 ease-out hover:-translate-y-1 hover:shadow-2xl ${surfaceClasses}`}>
+                  <p className={`text-sm uppercase tracking-[0.3em] ${mutedText}`}>Recommended</p>
+                  <div className="mt-5 space-y-4 text-sm text-slate-300">
+                    <div className="rounded-3xl bg-slate-900/80 p-4 transition duration-500 ease-out hover:-translate-y-1 hover:shadow-2xl">
+                      <div className="flex items-center gap-2">
+                        <IconSpark className="h-4 w-4 text-emerald-400" />
+                        <p className="font-semibold text-white">Keep it simple</p>
+                      </div>
+                      <p className="mt-2 text-slate-400">Select a level and move through the app in just a few taps.</p>
+                    </div>
+                    <div className="rounded-3xl bg-slate-900/80 p-4 transition duration-500 ease-out hover:-translate-y-1 hover:shadow-2xl">
+                      <div className="flex items-center gap-2">
+                        <IconRun className="h-4 w-4 text-emerald-400" />
+                        <p className="font-semibold text-white">Stay motivated</p>
+                      </div>
+                      <p className="mt-2 text-slate-400">Use the phrase preview as your warm-up mantra.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="grid gap-6 lg:grid-cols-[1.9fr_1.1fr]">
+              <article className={`rounded-[2rem] border p-6 shadow-2xl ring-1 sm:p-8 ${surfaceClasses}`} id="plan">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Guided run</p>
+                <h2 className="mt-2 text-2xl font-semibold text-white">Step-by-step session builder</h2>
+              </div>
+              <p className="text-sm text-slate-400">Tap through the flow on mobile or desktop.</p>
+            </div>
+
+              <div className={`mt-6 rounded-[1.75rem] p-5 ${isDark ? 'bg-slate-900/90' : 'bg-slate-100'} ${activePanel}`}>
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Current step</p>
+                  <p className="mt-2 text-xl font-semibold text-white">{steps[step]}</p>
+                </div>
+                <div className={`rounded-full px-4 py-2 text-sm font-semibold ${isDark ? 'bg-slate-800 text-slate-100' : 'bg-slate-200 text-slate-800'}`}>{step + 1} / {steps.length}</div>
+              </div>
+              <div className={`h-2 overflow-hidden rounded-full ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}>
+                <div className="h-full rounded-full bg-emerald-400" style={{ width: `${((step + 1) / steps.length) * 100}%` }} />
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-6">
+              {step === 0 && (
+                <div className="space-y-4">
+                  <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">Choose your phrase</p>
+                  <select value={language} onChange={(e) => setLanguage(e.target.value)} className={`w-full rounded-3xl border px-5 py-4 text-base outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/10 ${isDark ? 'border-slate-800 bg-slate-900 text-slate-100' : 'border-slate-200 bg-white text-slate-900'}`}>
+                    {languageOptions.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {step === 1 && (
+                <div className="space-y-4">
+                  <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">Enter your name</p>
+                  <input value={name} onChange={(e) => setName(e.target.value || 'Runner')} placeholder="Runner" className={`w-full rounded-3xl border px-5 py-4 text-base outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/10 ${isDark ? 'border-slate-800 bg-slate-900 text-slate-100' : 'border-slate-200 bg-white text-slate-900'}`} />
+                </div>
+              )}
+
+              {step === 2 && (
+                <div className="space-y-4">
+                  <div className={`flex flex-col gap-3 rounded-[1.75rem] border p-4 ${isDark ? 'border-emerald-400/30 bg-slate-900' : 'border-emerald-200 bg-emerald-50'}`}>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-400">Pick your intensity</p>
+                        <p className={`text-sm ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>Selected intensity: <span className={`font-semibold ${isDark ? 'text-emerald-300' : 'text-emerald-600'}`}>{level.title}</span></p>
+                      </div>
+                      <span className="inline-flex items-center rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white">
+                        {level.badge}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+                    {levelOptions.map((item, index) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        aria-pressed={index === levelIndex}
+                        onClick={() => setLevelIndex(index)}
+                        className={`group relative overflow-hidden rounded-[1.75rem] border p-5 text-left transition duration-200 ${index === levelIndex ? (isDark ? 'border-emerald-300 bg-emerald-500 text-white shadow-[0_0_0_2px_rgba(16,185,129,0.35),0_25px_70px_-24px_rgba(16,185,129,1)] ring-4 ring-emerald-300/40 scale-[1.01]' : 'border-emerald-600 bg-emerald-600 text-white shadow-[0_0_0_2px_rgba(16,185,129,0.35),0_25px_70px_-24px_rgba(16,185,129,1)] ring-4 ring-emerald-300/40 scale-[1.01]') : (isDark ? 'border-slate-800 bg-slate-900 text-slate-100 hover:border-emerald-400 hover:bg-slate-800 hover:shadow-lg' : 'border-slate-200 bg-white text-slate-900 hover:border-emerald-400 hover:bg-slate-50 hover:shadow-lg')} min-h-[220px]`}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <p className={`text-xs uppercase tracking-[0.35em] ${index === levelIndex ? 'text-emerald-100' : mutedText}`}>{item.badge}</p>
+                        </div>
+                        <p className={`mt-4 text-xl font-semibold ${index === levelIndex ? 'text-white' : (isDark ? 'text-slate-100' : 'text-slate-900')}`}>{item.title}</p>
+                        <p className={`mt-3 text-sm leading-6 ${index === levelIndex ? 'text-emerald-50' : secondaryText}`}>{item.description}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {step === 3 && (
+                <div className={`space-y-4 rounded-[1.5rem] border p-6 ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-slate-100'}`}>
+                  <p className={`text-sm font-semibold uppercase tracking-[0.3em] ${mutedText}`}>Summary</p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className={`rounded-3xl p-4 ${isDark ? 'bg-slate-950' : 'bg-white'}`}>
+                      <p className={`text-sm ${mutedText}`}>Name</p>
+                      <p className={`mt-2 text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{name}</p>
+                    </div>
+                    <div className={`rounded-3xl p-4 ${isDark ? 'bg-slate-950' : 'bg-white'}`}>
+                      <p className={`text-sm ${mutedText}`}>Level</p>
+                      <p className={`mt-2 text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{level.title}</p>
+                    </div>
+                  </div>
+                  <div className={`rounded-3xl p-4 ${isDark ? 'bg-slate-950' : 'bg-white'}`}>
+                    <p className={`text-sm ${mutedText}`}>Phrase</p>
+                    <p className={`mt-2 text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{phrase.phrase}</p>
+                    <p className={`mt-1 text-sm ${secondaryText}`}>{phrase.translation}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <button type="button" onClick={prev} disabled={step === 0 || isTransitioning} className={`flex-1 rounded-full border px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 hover:border-emerald-400 ${isDark ? 'border-slate-800 bg-slate-900 text-slate-200 hover:text-white' : 'border-slate-200 bg-white text-slate-800 hover:text-slate-900'}`}>
+                Back
+              </button>
+              <button type="button" onClick={next} disabled={step === steps.length - 1 || isTransitioning} className="flex-1 rounded-full bg-emerald-400 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-50">
+                Next
+              </button>
+            </div>
+          </article>
+
+          <aside className="space-y-6">
+            <div className={`rounded-[2rem] border p-6 shadow-xl ring-1 ${surfaceClasses}`} id="badges">
+              <div className="flex items-center gap-2">
+                <IconBadge className="h-5 w-5 text-emerald-400" />
+                <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Badges</p>
+              </div>
+              <h2 className="mt-3 text-2xl font-semibold text-white">Your collection</h2>
+              <div className="mt-5 space-y-3">
+                {levelOptions.map((item) => (
+                  <div key={item.id} className={`rounded-3xl border p-4 ${completed.includes(item.id) ? (isDark ? 'border-emerald-400 bg-slate-900 text-white' : 'border-emerald-400 bg-emerald-50 text-slate-900') : (isDark ? 'border-slate-800 bg-slate-950 text-slate-300' : 'border-slate-200 bg-white text-slate-700')}`}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{item.title}</p>
+                        <p className={`mt-1 text-sm ${mutedText}`}>{item.badge}</p>
+                      </div>
+                      <span className={`rounded-full px-3 py-1 text-xs font-semibold ${completed.includes(item.id) ? 'bg-emerald-400 text-slate-950' : (isDark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600')}`}>{completed.includes(item.id) ? 'Collected' : 'Locked'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className={`rounded-[2rem] border p-6 shadow-xl ring-1 ${surfaceClasses}`}>
+              <div className="flex items-center gap-2">
+                <IconSpark className="h-5 w-5 text-emerald-400" />
+                <p className="text-sm uppercase tracking-[0.3em] text-slate-500">Phrase preview</p>
+              </div>
+              <div className={`mt-4 space-y-3 rounded-[1.5rem] p-5 ${isDark ? 'bg-slate-900 text-slate-100' : 'bg-slate-100 text-slate-900'}`}>
+                <p className={`text-xs uppercase tracking-[0.3em] ${mutedText}`}>Pronunciation</p>
+                <p className={`mt-2 text-lg font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>{phrase.pronunciation}</p>
+                <p className={`mt-3 text-sm leading-6 ${secondaryText}`}>Say it before your run as a quick focus cue.</p>
+              </div>
+            </div>
+          </aside>
+        </section>
+      </div>
+
+      
+    </div>
+  </div>
+  </div>
+  );
+}
+
+export default App;

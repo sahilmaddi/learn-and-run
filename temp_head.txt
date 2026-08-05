@@ -1,0 +1,70 @@
+import { useEffect, useMemo, useState } from 'react';
+
+const IconDashboard = ({ className }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+    <path d="M4 11.5h6V4H4v7.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M14 20.5h6V12H14v8.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M4 20.5h6V13H4v7.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const IconPlan = ({ className }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+    <path d="M4 5h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M4 12h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M4 19h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+const IconBadge = ({ className }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+    <path d="M12 3.5c-3.866 0-7 2.925-7 6.533 0 3.22 2.29 5.906 5.33 6.352L12 21l1.67-4.615c3.04-.446 5.33-3.131 5.33-6.352 0-3.608-3.134-6.533-7-6.533Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+    <path d="M10.2 12.8 12 14.2l1.8-1.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const IconRun = ({ className }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+    <path d="M4 20h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M8 20 12 4l4 16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const IconSpark = ({ className }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+    <path d="m12 2 1.45 4.665L18 8.08l-3.725 2.31L14.9 15 12 12.92 9.1 15l.625-4.61L6 8.08l4.55-.415L12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+  </svg>
+);
+
+const IconTheme = ({ className }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+    <path d="M12 3v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M12 19v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M4.22 4.22 5.64 5.64" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M18.36 18.36 19.78 19.78" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M1 12h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M21 12h2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M4.22 19.78 5.64 18.36" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M18.36 5.64 19.78 4.22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const languageOptions = [
+  { value: 'spanish', label: 'Spanish', phrase: '¡Sí, puedes!', pronunciation: 'sí, pweh-des', ipa: '/si, ˈpweðes/', translation: 'Yes, you can!', langCode: 'es-ES', image: '/images/spanish.svg' },
+  { value: 'french', label: 'French', phrase: 'Allez, continue !', pronunciation: 'ah-lay, kon-teen-yuh', ipa: '/a.le, kɔ̃.ti.ny/', translation: 'Go on, keep going!', langCode: 'fr-FR', image: '/images/french.svg' },
+  { value: 'japanese', label: 'Japanese', phrase: '頑張って！', pronunciation: 'ganbatte', ipa: '/ɡan.bat.te/', translation: 'Do your best!', langCode: 'ja-JP', image: '/images/japanese.svg' },
+  { value: 'german', label: 'German', phrase: 'Du schaffst das!', pronunciation: 'doo shafst dahs', ipa: '/duː ˈʃafst das/', translation: 'You can do it!', langCode: 'de-DE', image: '/images/german.svg' },
+  { value: 'italian', label: 'Italian', phrase: 'Forza, continua!', pronunciation: 'for-tsa, kon-tee-nua', ipa: '/ˈfɔrtsa, konˈtinua/', translation: 'Go on, continue!', langCode: 'it-IT', image: '/images/italian.svg' },
+  { value: 'portuguese', label: 'Portuguese', phrase: 'Vai em frente!', pronunciation: 'vai em fren-chee', ipa: '/vaj ẽj ˈfɾẽtʃi/', translation: 'Move forward!', langCode: 'pt-PT', image: '/images/portuguese.svg' },
+  { value: 'mandarin', label: 'Chinese (Mandarin)', phrase: '加油！', pronunciation: 'jiā yóu', ipa: '/tɕjá jóu/', translation: 'Keep it up!', langCode: 'zh-CN', image: '/images/chinese.svg' },
+  { value: 'arabic', label: 'Arabic', phrase: 'هيا، استمر!', pronunciation: 'hayya, istimr', ipa: '/ħa.ja, is.ti.mir/', translation: 'Come on, continue!', langCode: 'ar-SA', image: '/images/arabic.svg' },
+  { value: 'hindi', label: 'Hindi', phrase: 'जितना हो सके करो!', pronunciation: 'jitna ho sake karo', ipa: '/d͡ʒit̪naː hoː ˈsəkɛ kəroː/', translation: 'Do as much as you can!', langCode: 'hi-IN', image: '/images/hindi.svg' },
+  { value: 'russian', label: 'Russian', phrase: 'Давай, продолжай!', pronunciation: 'davai, prodolzhai', ipa: '/dɐˈvaj prədɐlˈʐaj/', translation: 'Come on, continue!', langCode: 'ru-RU', image: '/images/russian.svg' },
+];
+
+const levelOptions = [
+  { id: 'beginner', title: 'Beginner', badge: '🌱 Rookie Spark', description: 'Warm up with a gentle walk and easy breathing.', steps: ['Walk 5 min', 'Breathe steady', 'Stretch gently'] },
+  { id: 'intermediate', title: 'Intermediate', badge: '🏃 Endurance Star', description: 'Build momentum with easy run intervals.', steps: ['Jog 8 min', 'Walk 2 min', 'Repeat twice'] },
+  { id: 'advanced', title: 'Advanced', badge: '🏅 Victory Peak', description: 'Push your pace with a focused sprint set.', steps: ['Run 1 min hard', 'Recover 2 min', 'Complete 4 sets'] },
+];
