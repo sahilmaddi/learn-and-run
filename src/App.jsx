@@ -30,7 +30,7 @@ const IconPause = ({ className }) => (
 );
 
 // ============================================================================
-// AUDIO UTILS & RELIABLE TTS ENGINE
+// AUDIO UTILS & ROBUST NATIVE TTS ENGINE
 // ============================================================================
 const playSoundEffect = (type) => {
   try {
@@ -58,27 +58,27 @@ const playSoundEffect = (type) => {
 
 const speakTextHelper = (text, langCode) => {
   if (!('speechSynthesis' in window)) return;
-  
+
   try {
-    window.speechSynthesis.cancel();
+    window.speechSynthesis.cancel(); // Stop any pending speech
 
     const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = langCode || 'es-ES';
+    utter.lang = langCode;
     utter.rate = 0.85;
 
-    const voices = window.speechSynthesis.getVoices();
-    if (voices.length > 0) {
-      const match = voices.find(v => v.lang === langCode || v.lang.startsWith(langCode.slice(0, 2)));
-      if (match) utter.voice = match;
-      window.speechSynthesis.speak(utter);
-    } else {
-      window.speechSynthesis.onvoiceschanged = () => {
-        const asyncVoices = window.speechSynthesis.getVoices();
-        const match = asyncVoices.find(v => v.lang === langCode || v.lang.startsWith(langCode.slice(0, 2)));
-        if (match) utter.voice = match;
-        window.speechSynthesis.speak(utter);
-      };
+    const availableVoices = window.speechSynthesis.getVoices();
+    const langPrefix = langCode.slice(0, 2);
+
+    // Prioritize exact match, then language prefix match (e.g., 'es')
+    const nativeVoice =
+      availableVoices.find((v) => v.lang.replace('_', '-') === langCode) ||
+      availableVoices.find((v) => v.lang.startsWith(langPrefix));
+
+    if (nativeVoice) {
+      utter.voice = nativeVoice;
     }
+
+    window.speechSynthesis.speak(utter);
   } catch (e) {
     console.error('Speech synthesis error:', e);
   }
@@ -221,7 +221,7 @@ export default function App() {
 
   // Module & Word Index
   const [currentModuleIdx, setCurrentModuleIdx] = useState(0);
-  const [wordIdx, setWordIdx] = useState(0); // 0-4 = Words, 5 = Quiz
+  const [wordIdx, setWordIdx] = useState(0);
   const [quizAnswers, setQuizAnswers] = useState({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
 
@@ -240,13 +240,14 @@ export default function App() {
   const activeModule = modulesData[currentModuleIdx];
   const singleActiveWord = activeModule ? activeModule.words[wordIdx] : null;
 
-  // Initialize Voices on Mount
+  // Initialize Voices on Mount & set listener to ensure speech engine voice pool is loaded
   useEffect(() => {
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.getVoices();
-      window.speechSynthesis.onvoiceschanged = () => {
+      const loadVoices = () => {
         window.speechSynthesis.getVoices();
       };
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
     }
   }, []);
 
@@ -255,12 +256,10 @@ export default function App() {
     document.body.style.backgroundColor = isDark ? '#020617' : '#f8fafc';
   }, [isDark]);
 
-  // Wrapper for single word speech execution
   const speakCurrentWord = (text) => {
     speakTextHelper(text, currentLangObj.langCode);
   };
 
-  // Direct Click Handlers: Directly triggers speech in user-gesture context
   const handleNextWord = () => {
     if (wordIdx < 4) {
       const nextWordIdx = wordIdx + 1;
@@ -269,7 +268,7 @@ export default function App() {
       const textToSpeak = nextWord[selectedLang] || nextWord.spanish;
       speakCurrentWord(textToSpeak);
     } else {
-      setWordIdx(5); // Transition to Quiz
+      setWordIdx(5);
     }
   };
 
@@ -310,13 +309,12 @@ export default function App() {
       setWordIdx(0);
       setQuizAnswers({});
       setQuizSubmitted(false);
-      
+
       const firstWord = modulesData[currentModuleIdx + 1].words[0];
       speakCurrentWord(firstWord[selectedLang] || firstWord.spanish);
     }
   };
 
-  // Marathon Lingo Play Toggle
   const togglePlayMarathon = () => {
     if (!isPlaying) {
       setIsPlaying(true);
@@ -328,7 +326,6 @@ export default function App() {
     }
   };
 
-  // Marathon Lingo Timer Loop & Speech trigger on Track Change
   useEffect(() => {
     if (isPlaying && activeTab === 'run') {
       timerRef.current = setInterval(() => {
@@ -337,7 +334,7 @@ export default function App() {
             if (trackIndex < runAudioTracks.length - 1) {
               const nextIdx = trackIndex + 1;
               setTrackIndex(nextIdx);
-              
+
               const nextTrackText = runAudioTracks[nextIdx].target[selectedLang] || runAudioTracks[nextIdx].target.spanish;
               speakTextHelper(nextTrackText, currentLangObj.langCode);
 
@@ -359,7 +356,6 @@ export default function App() {
 
   return (
     <div className={`min-h-screen ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} font-sans transition-colors duration-300 pb-20 md:pb-8`}>
-      
       {/* HEADER */}
       <header className={`sticky top-0 z-50 backdrop-blur-md border-b ${isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-white/80 border-slate-200'} px-4 py-3.5`}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -419,8 +415,6 @@ export default function App() {
       <main className="max-w-6xl mx-auto px-4 py-8">
         {activeTab === 'learn' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
-            {/* Modules Sidebar */}
             <div className="hidden lg:block lg:col-span-4 space-y-2.5 max-h-[80vh] overflow-y-auto pr-2">
               <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 px-1">Curriculum (10 Modules)</h2>
               {modulesData.map((m, idx) => {
@@ -452,11 +446,8 @@ export default function App() {
               })}
             </div>
 
-            {/* Flashcard & Quiz Card */}
             <div className="lg:col-span-8">
               <div className={`p-6 sm:p-8 rounded-[2.5rem] border shadow-xl relative ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
-                
-                {/* Header Track */}
                 <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
                   <div>
                     <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">{activeModule.title}</span>
@@ -476,7 +467,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* SINGLE WORD DISPLAY */}
                 {wordIdx < 5 && singleActiveWord && (
                   <div className="text-center py-8">
                     <span className="inline-block px-3.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-[10px] font-bold tracking-wider uppercase mb-6">
@@ -518,7 +508,6 @@ export default function App() {
                   </div>
                 )}
 
-                {/* 5-WORD QUIZ */}
                 {wordIdx === 5 && (
                   <div className="space-y-6">
                     {!quizSubmitted ? (
@@ -582,10 +571,8 @@ export default function App() {
                     )}
                   </div>
                 )}
-
               </div>
             </div>
-
           </div>
         )}
 
@@ -618,7 +605,6 @@ export default function App() {
                 </button>
               </div>
 
-              {/* TRACK SELECTOR LIST */}
               <div className="mt-8 pt-6 border-t border-slate-800 text-left space-y-3">
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Audio Cues Queue</h4>
                 {runAudioTracks.map((tr, idx) => (
@@ -693,22 +679,6 @@ export default function App() {
               <p className="text-sm text-slate-400 leading-relaxed mb-4">
                 Learn & Run combines structured flashcard curriculum learning with hands-free audio cueing designed for workouts, runs, and active study.
               </p>
-              <div className="space-y-3 pt-4 border-t border-slate-800">
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">🌱</span>
-                  <div>
-                    <h4 className="text-xs font-bold">10 Complete Modules</h4>
-                    <p className="text-[11px] text-slate-400">Master 50 core beginner words with instant TTS pronunciation and quizzes.</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">🎧</span>
-                  <div>
-                    <h4 className="text-xs font-bold">Marathon Lingo Mode</h4>
-                    <p className="text-[11px] text-slate-400">Timed audio cues spoken in target languages to sync language acquisition with exercise routines.</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         )}
@@ -736,7 +706,6 @@ export default function App() {
           </button>
         ))}
       </nav>
-
     </div>
   );
 }
