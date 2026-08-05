@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Volume2, ChevronLeft, Globe, Mic, MicOff, Gauge } from 'lucide-react';
+import { Volume2, ChevronLeft, Globe, Mic, MicOff, Gauge, AlertCircle } from 'lucide-react';
 
 const LANGUAGES = [
   { id: 'es-MX', name: 'Spanish (Latin America)', flag: '🇲🇽', speechLang: 'es-MX' },
@@ -11,34 +11,34 @@ const LANGUAGES = [
 
 const MARATHON_LINGO = {
   'es-MX': [
-    { term: 'el muro', meaning: 'The Wall (Mile 20 fatigue)', fallback: 'el moo-roh' },
-    { term: 'ritmo de carrera', meaning: 'Race pace', fallback: 'reet-moh deh kah-reh-rah' },
-    { term: 'hidratación', meaning: 'Hydration station', fallback: 'ee-drah-tah-syohn' },
-    { term: 'meta', meaning: 'Finish line', fallback: 'meh-tah' }
+    { term: 'el muro', meaning: 'The Wall (Mile 20 fatigue)' },
+    { term: 'ritmo de carrera', meaning: 'Race pace' },
+    { term: 'estación de hidratación', meaning: 'Hydration station' },
+    { term: 'línea de meta', meaning: 'Finish line' }
   ],
   'es-ES': [
-    { term: 'el muro', meaning: 'The Wall (Mile 20 fatigue)', fallback: 'el moo-roh' },
-    { term: 'ritmo de carrera', meaning: 'Race pace', fallback: 'reet-moh deh kah-reh-rah' },
-    { term: 'hidratación', meaning: 'Hydration station', fallback: 'ee-drah-tah-thyohn' },
-    { term: 'meta', meaning: 'Finish line', fallback: 'meh-tah' }
+    { term: 'el muro', meaning: 'The Wall (Mile 20 fatigue)' },
+    { term: 'ritmo de carrera', meaning: 'Race pace' },
+    { term: 'avituallamiento', meaning: 'Aid / Hydration station' },
+    { term: 'línea de meta', meaning: 'Finish line' }
   ],
   'fr-FR': [
-    { term: 'le mur', meaning: 'The Wall', fallback: 'luh myoor' },
-    { term: 'allure de course', meaning: 'Race pace', fallback: 'ah-lyoor duh koors' },
-    { term: 'ravitaillement', meaning: 'Aid station', fallback: 'rah-vee-tye-mah' },
-    { term: 'ligne d’arrivée', meaning: 'Finish line', fallback: 'leen dah-ree-vay' }
+    { term: 'le mur', meaning: 'The Wall' },
+    { term: 'allure de course', meaning: 'Race pace' },
+    { term: 'ravitaillement', meaning: 'Aid station' },
+    { term: 'ligne d’arrivée', meaning: 'Finish line' }
   ],
   'de-DE': [
-    { term: 'der Hammer-Mann', meaning: 'Hitting the wall', fallback: 'dair hah-mer-mahn' },
-    { term: 'Wettkampftempo', meaning: 'Race pace', fallback: 'vet-kahmpf-tem-poh' },
-    { term: 'Verpflegungsstation', meaning: 'Aid station', fallback: 'fair-pfly-goongs-shta-tsyoohn' },
-    { term: 'Ziellinie', meaning: 'Finish line', fallback: 'tseel-lee-nee-uh' }
+    { term: 'der Hammermann', meaning: 'Hitting the wall' },
+    { term: 'Wettkampftempo', meaning: 'Race pace' },
+    { term: 'Verpflegungsstation', meaning: 'Aid station' },
+    { term: 'Ziellinie', meaning: 'Finish line' }
   ],
   'it-IT': [
-    { term: 'il muro', meaning: 'The Wall', fallback: 'eel moo-roh' },
-    { term: 'ritmo gara', meaning: 'Race pace', fallback: 'reet-moh gah-rah' },
-    { term: 'ristoro', meaning: 'Aid station', fallback: 'ree-stor-oh' },
-    { term: 'traguardo', meaning: 'Finish line', fallback: 'trah-gwahr-doh' }
+    { term: 'il muro', meaning: 'The Wall' },
+    { term: 'ritmo gara', meaning: 'Race pace' },
+    { term: 'punto di ristoro', meaning: 'Aid station' },
+    { term: 'linea del traguardo', meaning: 'Finish line' }
   ]
 };
 
@@ -51,9 +51,12 @@ const PACE_PRESETS = [
 export default function RunnerSpeechApp() {
   const [selectedLang, setSelectedLang] = useState(null);
   const [inputText, setInputText] = useState('');
-  const [availableVoices, setAvailableVoices] = useState([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [speechRate, setSpeechRate] = useState(0.8); // Default marathon pace
+  const [speechRate, setSpeechRate] = useState(0.8);
+
+  // Audio Engine Mode: 'vercel' | 'google-cloud' | 'web-speech'
+  const [audioEngine, setAudioEngine] = useState('vercel');
+  const [googleApiKey, setGoogleApiKey] = useState('');
 
   // Speech Recognition States
   const [isListening, setIsListening] = useState(false);
@@ -61,26 +64,16 @@ export default function RunnerSpeechApp() {
   const [wordFeedback, setWordFeedback] = useState([]);
   const [isMicSupported, setIsMicSupported] = useState(true);
 
-  // Audio Visualizer Canvas & Audio Context Refs
+  // Audio & Animation Refs
   const recognitionRef = useRef(null);
   const canvasRef = useRef(null);
   const audioCtxRef = useRef(null);
   const analyserRef = useRef(null);
   const animFrameRef = useRef(null);
   const mediaStreamRef = useRef(null);
+  const audioPlayerRef = useRef(null);
 
-  useEffect(() => {
-    const updateVoices = () => {
-      if ('speechSynthesis' in window) {
-        setAvailableVoices(window.speechSynthesis.getVoices());
-      }
-    };
-    updateVoices();
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.onvoiceschanged = updateVoices;
-    }
-  }, []);
-
+  // Initialize Speech Recognition API
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -118,6 +111,7 @@ export default function RunnerSpeechApp() {
     recognitionRef.current = recognition;
   }, [inputText, selectedLang]);
 
+  // Audio Visualizer
   const startAudioVisualizer = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -199,39 +193,104 @@ export default function RunnerSpeechApp() {
     setWordFeedback(feedback);
   };
 
-  const handleSpeak = (textToSpeak = inputText, overrideRate) => {
-    if (!('speechSynthesis' in window) || !selectedLang || !textToSpeak.trim()) return;
+  // MULTI-AGENT TTS CONTROLLER
+  const handleSpeak = async (textToSpeak = inputText, overrideRate) => {
+    if (!selectedLang || !textToSpeak.trim()) return;
+    const rate = overrideRate || speechRate;
+    const text = textToSpeak.trim();
 
-    window.speechSynthesis.cancel();
-
-    const nativeVoice = availableVoices.find(v => 
-      v.lang.toLowerCase() === selectedLang.id.toLowerCase() ||
-      v.lang.toLowerCase().startsWith(selectedLang.id.split('-')[0])
-    );
-
-    let textToDeliver = textToSpeak.trim();
-    let targetLang = selectedLang.id;
-
-    if (!nativeVoice) {
-      const list = MARATHON_LINGO[selectedLang.id] || [];
-      const item = list.find(entry => entry.term.toLowerCase() === textToDeliver.toLowerCase());
-      if (item) {
-        textToDeliver = item.fallback;
-        targetLang = 'en-US';
-      }
+    // Stop existing audio
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.pause();
+      audioPlayerRef.current = null;
+    }
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
     }
 
-    const utterance = new SpeechSynthesisUtterance(textToDeliver);
-    utterance.lang = targetLang;
-    utterance.rate = overrideRate || speechRate; // Dynamically uses selected rate
+    setIsSpeaking(true);
 
-    if (nativeVoice) utterance.voice = nativeVoice;
+    // AGENT 1: Vercel Proxy Serverless Endpoint
+    if (audioEngine === 'vercel') {
+      const audioUrl = `/api/tts?text=${encodeURIComponent(text)}&lang=${selectedLang.id}`;
+      const audio = new Audio(audioUrl);
+      audio.playbackRate = rate;
+      audioPlayerRef.current = audio;
 
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
+      audio.onended = () => setIsSpeaking(false);
+      audio.onerror = () => {
+        setIsSpeaking(false);
+        alert('Vercel API TTS route failed. Check server logs or try Web Speech mode.');
+      };
+      audio.play().catch(() => setIsSpeaking(false));
+      return;
+    }
 
-    window.speechSynthesis.speak(utterance);
+    // AGENT 2: Direct Google Cloud Text-to-Speech API
+    if (audioEngine === 'google-cloud') {
+      if (!googleApiKey) {
+        alert('Please enter a Google Cloud API Key in options.');
+        setIsSpeaking(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `https://texttospeech.googleapis.com/v1/text:synthesize?key=${googleApiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              input: { text },
+              voice: { languageCode: selectedLang.id, ssmlGender: 'NEUTRAL' },
+              audioConfig: { audioEncoding: 'MP3' }
+            })
+          }
+        );
+
+        const data = await response.json();
+        if (data.audioContent) {
+          const audio = new Audio(`data:audio/mp3;base64,${data.audioContent}`);
+          audio.playbackRate = rate;
+          audioPlayerRef.current = audio;
+
+          audio.onended = () => setIsSpeaking(false);
+          audio.onerror = () => setIsSpeaking(false);
+          audio.play();
+        } else {
+          throw new Error(data.error?.message || 'Synthesis failed');
+        }
+      } catch (err) {
+        alert(`Google Cloud TTS Error: ${err.message}`);
+        setIsSpeaking(false);
+      }
+      return;
+    }
+
+    // AGENT 3: Web Speech API Browser Native Fallback
+    if (audioEngine === 'web-speech') {
+      if (!('speechSynthesis' in window)) {
+        alert('Web Speech API is not supported in this browser.');
+        setIsSpeaking(false);
+        return;
+      }
+
+      const voices = window.speechSynthesis.getVoices();
+      const nativeVoice = voices.find(v =>
+        v.lang.toLowerCase() === selectedLang.id.toLowerCase() ||
+        v.lang.toLowerCase().startsWith(selectedLang.id.split('-')[0])
+      );
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = selectedLang.id;
+      utterance.rate = rate;
+      if (nativeVoice) utterance.voice = nativeVoice;
+
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+
+      window.speechSynthesis.speak(utterance);
+    }
   };
 
   const toggleListening = () => {
@@ -246,6 +305,7 @@ export default function RunnerSpeechApp() {
   };
 
   const handleGoBack = () => {
+    if (audioPlayerRef.current) audioPlayerRef.current.pause();
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     if (recognitionRef.current && isListening) recognitionRef.current.stop();
     stopAudioVisualizer();
@@ -324,7 +384,33 @@ export default function RunnerSpeechApp() {
               style={{ padding: '12px', fontSize: '18px', borderRadius: '6px', border: '1px solid #ccc' }}
             />
 
-            {/* Interactive Speed Toggle Controls */}
+            {/* Audio Engine Selection Selector */}
+            <div style={{ background: '#f1f5f9', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+              <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#334155', display: 'block', marginBottom: '6px' }}>
+                AUDIO ENGINE AGENT:
+              </label>
+              <select
+                value={audioEngine}
+                onChange={(e) => setAudioEngine(e.target.value)}
+                style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #94a3b8', fontSize: '13px' }}
+              >
+                <option value="vercel">Vercel Proxy Agent (Google Translate TTS)</option>
+                <option value="google-cloud">Google Cloud TTS Agent (Native Quality)</option>
+                <option value="web-speech">Browser Native Agent (Web Speech API)</option>
+              </select>
+
+              {audioEngine === 'google-cloud' && (
+                <input
+                  type="password"
+                  placeholder="Enter Google Cloud API Key..."
+                  value={googleApiKey}
+                  onChange={(e) => setGoogleApiKey(e.target.value)}
+                  style={{ width: '100%', marginTop: '8px', padding: '6px', fontSize: '12px', borderRadius: '4px', border: '1px solid #ccc' }}
+                />
+              )}
+            </div>
+
+            {/* Pace Selector */}
             <div style={{ background: '#f8fafc', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontSize: '13px', fontWeight: 'bold', color: '#475569' }}>
                 <Gauge size={16} /> Select Audio Pace:
@@ -347,8 +433,7 @@ export default function RunnerSpeechApp() {
                       border: speechRate === preset.rate ? '2px solid #0070f3' : '1px solid #cbd5e1',
                       background: speechRate === preset.rate ? '#0070f3' : '#fff',
                       color: speechRate === preset.rate ? '#fff' : '#334155',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
+                      cursor: 'pointer'
                     }}
                   >
                     {preset.label}
@@ -357,6 +442,7 @@ export default function RunnerSpeechApp() {
               </div>
             </div>
 
+            {/* Live Audio Visualizer */}
             {isListening && (
               <div style={{ background: '#18181b', borderRadius: '8px', padding: '8px', textAlign: 'center' }}>
                 <canvas ref={canvasRef} width={380} height={50} style={{ width: '100%', height: '50px' }} />
@@ -364,6 +450,7 @@ export default function RunnerSpeechApp() {
               </div>
             )}
 
+            {/* Controls */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               <button
                 onClick={() => handleSpeak()}
@@ -408,6 +495,7 @@ export default function RunnerSpeechApp() {
               </button>
             </div>
 
+            {/* Word-by-Word Feedback */}
             {wordFeedback.length > 0 && (
               <div style={{ marginTop: '8px', padding: '12px', borderRadius: '8px', background: '#f8fafc', border: '1px solid #e2e8f0' }}>
                 <p style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: 'bold' }}>Pronunciation Breakdown:</p>
@@ -432,6 +520,7 @@ export default function RunnerSpeechApp() {
               </div>
             )}
 
+            {/* Lingo Selection */}
             <div style={{ marginTop: '12px' }}>
               <p style={{ fontSize: '14px', fontWeight: 'bold', color: '#333', marginBottom: '8px' }}>
                 Official Marathon Lingo:
