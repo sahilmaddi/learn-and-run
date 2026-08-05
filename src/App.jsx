@@ -27,18 +27,6 @@ const IconPause = ({ className }) => (
   </svg>
 );
 
-const IconSkipNext = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
-  </svg>
-);
-
-const IconSkipPrev = ({ className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
-  </svg>
-);
-
 // Built-in Synthesizer Sound Effects using Web Audio API
 const playSoundEffect = (type) => {
   try {
@@ -46,30 +34,7 @@ const playSoundEffect = (type) => {
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
 
-    if (type === 'beep') {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(800, ctx.currentTime);
-      gain.gain.setValueAtTime(0.1, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.15);
-    } else if (type === 'start') {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(440, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.3);
-    } else if (type === 'correct') {
+    if (type === 'correct') {
       [523.25, 659.25, 783.99].forEach((freq, idx) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -159,7 +124,8 @@ export default function App() {
   const [selectedLang, setSelectedLang] = useState('spanish');
   const [isDark, setIsDark] = useState(true);
   
-  // Step-by-Step Beginner Progression State
+  // Progression & Mode State ('learn' vs 'quiz')
+  const [stepMode, setStepMode] = useState('learn'); // 'learn' | 'quiz'
   const [completedWordIds, setCompletedWordIds] = useState(new Set([1]));
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [quizSelection, setQuizSelection] = useState(null);
@@ -201,6 +167,12 @@ export default function App() {
     }
   };
 
+  // Switch to Quiz view
+  const handleStartPractice = () => {
+    setStepMode('quiz');
+    setQuizSelection(null);
+  };
+
   // Check Quiz Selection and Unlock Next Word Step
   const handleQuizCheck = (option) => {
     setQuizSelection(option);
@@ -224,6 +196,7 @@ export default function App() {
     if (activeStepIndex < stepByStepVocab.length - 1) {
       const nextIdx = activeStepIndex + 1;
       setActiveStepIndex(nextIdx);
+      setStepMode('learn');
       setQuizSelection(null);
       const nextWordObj = stepByStepVocab[nextIdx];
       speakText(nextWordObj[selectedLang] || nextWordObj.english);
@@ -234,6 +207,7 @@ export default function App() {
     if (activeStepIndex > 0) {
       const prevIdx = activeStepIndex - 1;
       setActiveStepIndex(prevIdx);
+      setStepMode('learn');
       setQuizSelection(null);
       const prevWordObj = stepByStepVocab[prevIdx];
       speakText(prevWordObj[selectedLang] || prevWordObj.english);
@@ -343,49 +317,94 @@ export default function App() {
                 {currentStepWord.module} • Word {activeStepIndex + 1} of {stepByStepVocab.length}
               </span>
 
-              {/* Target Foreign Word */}
-              <div className="text-4xl font-black text-emerald-400 my-4 tracking-wide">
-                {activeForeignWord}
-              </div>
+              {/* Step 1: LEARN MODE */}
+              {stepMode === 'learn' && (
+                <div className="py-4">
+                  <span className="inline-block px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-[10px] font-bold tracking-wider uppercase mb-3">
+                    Step 1: Learn Word
+                  </span>
 
-              {/* Audio Listen Button */}
-              <button
-                type="button"
-                onClick={() => speakText(activeForeignWord)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-400/20 hover:scale-105 active:scale-95 transition my-2"
-              >
-                <IconAudio className="h-4 w-4" /> Listen Pronunciation
-              </button>
+                  {/* Target Foreign Word */}
+                  <div className="text-4xl font-black text-emerald-400 my-2 tracking-wide">
+                    {activeForeignWord}
+                  </div>
 
-              {/* Quiz Step */}
-              <div className="mt-6 pt-6 border-t border-slate-800">
-                <p className="text-xs text-slate-400 mb-3 font-medium">Select the correct translation:</p>
-                <div className="grid grid-cols-3 gap-2">
-                  {currentStepWord.options.map((opt, idx) => {
-                    const isSelected = quizSelection === opt;
-                    const isCorrect = opt === currentStepWord.english;
+                  {/* English Translation */}
+                  <p className="text-xl font-bold text-slate-300 mb-4">
+                    "{currentStepWord.english}"
+                  </p>
 
-                    let btnStyle = isDark ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-slate-100';
-                    if (isSelected) {
-                      btnStyle = isCorrect ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400 font-bold' : 'border-red-500 bg-red-500/20 text-red-400 font-bold';
-                    }
+                  {/* Audio Listen Button */}
+                  <button
+                    type="button"
+                    onClick={() => speakText(activeForeignWord)}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-400/20 hover:scale-105 active:scale-95 transition mb-6"
+                  >
+                    <IconAudio className="h-4 w-4" /> Listen Pronunciation
+                  </button>
 
-                    return (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => handleQuizCheck(opt)}
-                        className={`p-3 rounded-2xl border text-xs transition ${btnStyle}`}
-                      >
-                        {opt}
-                      </button>
-                    );
-                  })}
+                  <div>
+                    <button
+                      type="button"
+                      onClick={handleStartPractice}
+                      className="w-full py-3.5 rounded-2xl bg-emerald-400 text-slate-950 font-bold text-sm shadow-md hover:opacity-90 active:scale-98 transition"
+                    >
+                      I Got It! Test Me →
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Step 2: QUIZ / PRACTICE MODE */}
+              {stepMode === 'quiz' && (
+                <div className="py-2">
+                  <span className="inline-block px-3 py-1 bg-amber-500/10 text-amber-400 rounded-full text-[10px] font-bold tracking-wider uppercase mb-3">
+                    Step 2: Test Memory
+                  </span>
+
+                  <div className="text-3xl font-black text-emerald-400 my-3 tracking-wide">
+                    {activeForeignWord}
+                  </div>
+
+                  <p className="text-xs text-slate-400 mb-4 font-medium">Select the correct English translation:</p>
+                  
+                  <div className="grid grid-cols-3 gap-2">
+                    {currentStepWord.options.map((opt, idx) => {
+                      const isSelected = quizSelection === opt;
+                      const isCorrect = opt === currentStepWord.english;
+
+                      let btnStyle = isDark ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-slate-100';
+                      if (isSelected) {
+                        btnStyle = isCorrect ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400 font-bold' : 'border-red-500 bg-red-500/20 text-red-400 font-bold';
+                      }
+
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleQuizCheck(opt)}
+                          className={`p-3 rounded-2xl border text-xs transition ${btnStyle}`}
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-4">
+                    <button
+                      type="button"
+                      onClick={() => setStepMode('learn')}
+                      className="text-xs text-slate-400 underline hover:text-slate-200"
+                    >
+                      ← Review Word
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Step Navigation Controls */}
-              <div className="flex items-center justify-between mt-6 pt-4">
+              <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={handlePrevWordStep}
