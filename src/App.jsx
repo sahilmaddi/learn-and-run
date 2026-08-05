@@ -363,8 +363,8 @@ export default function App() {
         {activeTab === 'learn' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            {/* Modules Sidebar (Full 10 Beginner Modules) */}
-            <div className="lg:col-span-4 space-y-2.5 max-h-[80vh] overflow-y-auto pr-2">
+            {/* Modules Sidebar (Hidden on Mobile, Visible on Desktop) */}
+            <div className="hidden lg:block lg:col-span-4 space-y-2.5 max-h-[80vh] overflow-y-auto pr-2">
               <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3 px-1">Curriculum (10 Modules)</h2>
               {modulesData.map((m, idx) => {
                 const isActive = idx === currentModuleIdx;
