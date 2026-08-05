@@ -323,7 +323,7 @@ export default function App() {
           <nav className="hidden md:flex items-center gap-1 bg-slate-900/40 border border-slate-800 p-1 rounded-full">
             {[
               { id: 'learn', label: '🌱 Study' },
-              { id: 'run', label: '🎧 Audio Player' },
+              { id: 'run', label: '🎧 Marathon Lingo' },
               { id: 'dashboard', label: '📊 Dashboard' },
               { id: 'about', label: 'ℹ️ About' }
             ].map(tab => (
@@ -524,12 +524,12 @@ export default function App() {
           </div>
         )}
 
-        {/* RUNNER AUDIO MODE */}
+        {/* MARATHON LINGO MODE */}
         {activeTab === 'run' && (
           <div className="max-w-2xl mx-auto space-y-6">
             <div className={`p-8 rounded-[2.5rem] border text-center shadow-2xl ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
               <span className="text-xs font-bold uppercase tracking-widest text-emerald-400 block mb-2">
-                Hands-Free Audio Track {trackIndex + 1} of {runAudioTracks.length}
+                Marathon Lingo • Track {trackIndex + 1} of {runAudioTracks.length}
               </span>
 
               <div className="p-8 rounded-3xl border border-emerald-500/20 bg-emerald-500/5 my-6">
@@ -597,7 +597,7 @@ export default function App() {
       <nav className={`md:hidden fixed bottom-0 left-0 right-0 border-t ${isDark ? 'bg-slate-950/90 border-slate-800' : 'bg-white/90 border-slate-200'} backdrop-blur-lg px-4 py-2 flex items-center justify-around z-50`}>
         {[
           { id: 'learn', label: 'Study', icon: '🌱' },
-          { id: 'run', label: 'Run', icon: '🎧' },
+          { id: 'run', label: 'Marathon Lingo', icon: '🎧' },
           { id: 'dashboard', label: 'Stats', icon: '📊' },
           { id: 'about', label: 'About', icon: 'ℹ️' }
         ].map(item => (
