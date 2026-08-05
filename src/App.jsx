@@ -52,7 +52,7 @@ const playSoundEffect = (type) => {
       });
     }
   } catch (e) {
-    // Audio Context restriction handling
+    // Audio Context browser policy handling
   }
 };
 
@@ -67,52 +67,28 @@ const languages = [
   { value: 'italian', label: 'Italian 🇮🇹', langCode: 'it-IT' }
 ];
 
+// Modules with exactly 5 words each
 const modulesData = [
   {
-    id: 'm1',
-    title: 'Module 1: Essential Basics',
-    description: 'Master core greetings and quick conversational markers.',
+    id: 1,
+    title: 'Module 1: Everyday Basics',
     words: [
-      { english: 'Hello', spanish: '¡Hola!', french: 'Bonjour !', german: 'Hallo!', japanese: 'こんにちは！', italian: 'Ciao!' },
-      { english: 'Yes', spanish: 'Sí', french: 'Oui', german: 'Ja', japanese: 'はい', italian: 'Sì' },
-      { english: 'No', spanish: 'No', french: 'Non', german: 'Nein', japanese: 'いいえ', italian: 'No' },
-      { english: 'Please', spanish: 'Por favor', french: 'S’il vous plaît', german: 'Bitte', japanese: 'お願いします', italian: 'Per favore' },
-      { english: 'Thank you', spanish: 'Gracias', french: 'Merci', german: 'Danke', japanese: 'ありがとう', italian: 'Grazie' }
-    ],
-    quiz: [
-      { question: 'How do you say "Hello"?', options: ['¡Hola!', 'Gracias', 'No'], answer: '¡Hola!' },
-      { question: 'How do you say "Thank you"?', options: ['Por favor', 'Gracias', 'Sí'], answer: 'Gracias' }
+      { id: 1, english: 'Hello', spanish: '¡Hola!', french: 'Bonjour !', german: 'Hallo!', japanese: 'こんにちは！', italian: 'Ciao!', options: ['Hello', 'Goodbye', 'Run'] },
+      { id: 2, english: 'Yes', spanish: 'Sí', french: 'Oui', german: 'Ja', japanese: 'はい', italian: 'Sì', options: ['Yes', 'No', 'Please'] },
+      { id: 3, english: 'No', spanish: 'No', french: 'Non', german: 'Nein', japanese: 'いいえ', italian: 'No', options: ['Yes', 'No', 'Stop'] },
+      { id: 4, english: 'Please', spanish: 'Por favor', french: 'S’il vous plaît', german: 'Bitte', japanese: 'お願いします', italian: 'Per favore', options: ['Thank you', 'Please', 'Hello'] },
+      { id: 5, english: 'Thank you', spanish: 'Gracias', french: 'Merci', german: 'Danke', japanese: 'ありがとう', italian: 'Grazie', options: ['Thank you', 'Sorry', 'Walk'] }
     ]
   },
   {
-    id: 'm2',
-    title: 'Module 2: Runner Movement',
-    description: 'Learn physical action verbs designed for active listening.',
+    id: 2,
+    title: 'Module 2: Runner Actions',
     words: [
-      { english: 'Walk', spanish: 'Caminar', french: 'Marcher', german: 'Gehen', japanese: '歩く', italian: 'Camminare' },
-      { english: 'Run', spanish: 'Correr', french: 'Courir', german: 'Laufen', japanese: '走る', italian: 'Correre' },
-      { english: 'Stop', spanish: 'Alto', french: 'Stop', german: 'Halt', japanese: '止まれ', italian: 'Stop' },
-      { english: 'Start', spanish: 'Empezar', french: 'Commencer', german: 'Starten', japanese: '始める', italian: 'Iniziare' },
-      { english: 'Jump', spanish: 'Saltar', french: 'Sauter', german: 'Springen', japanese: '跳ぶ', italian: 'Saltare' }
-    ],
-    quiz: [
-      { question: 'What is the action verb for "Run"?', options: ['Caminar', 'Correr', 'Saltar'], answer: 'Correr' },
-      { question: 'What is the command for "Stop"?', options: ['Alto', 'Empezar', 'Correr'], answer: 'Alto' }
-    ]
-  },
-  {
-    id: 'm3',
-    title: 'Module 3: Speed & Pace',
-    description: 'Pacing terms to regulate your cadence while running.',
-    words: [
-      { english: 'Fast', spanish: 'Rápido', french: 'Rapide', german: 'Schnell', japanese: '速い', italian: 'Veloce' },
-      { english: 'Slow', spanish: 'Lento', french: 'Lent', german: 'Langsam', japanese: '遅い', italian: 'Lento' },
-      { english: 'Now', spanish: 'Ahora', french: 'Maintenant', german: 'Jetzt', japanese: '今', italian: 'Adesso' },
-      { english: 'Rhythm', spanish: 'Ritmo', french: 'Rythme', german: 'Rhythmus', japanese: 'リズム', italian: 'Ritmo' },
-      { english: 'Pace', spanish: 'Paso', french: 'Allure', german: 'Tempo', japanese: 'ペース', italian: 'Passo' }
-    ],
-    quiz: [
-      { question: 'How do you describe "Fast"?', options: ['Lento', 'Rápido', 'Paso'], answer: 'Rápido' }
+      { id: 6, english: 'Walk', spanish: 'Caminar', french: 'Marcher', german: 'Gehen', japanese: '歩く', italian: 'Camminare', options: ['Walk', 'Run', 'Stop'] },
+      { id: 7, english: 'Run', spanish: 'Correr', french: 'Courir', german: 'Laufen', japanese: '走る', italian: 'Correre', options: ['Run', 'Jump', 'Drink'] },
+      { id: 8, english: 'Stop', spanish: 'Alto', french: 'Stop', german: 'Halt', japanese: '止まれ', italian: 'Stop', options: ['Fast', 'Slow', 'Stop'] },
+      { id: 9, english: 'Start', spanish: 'Empezar', french: 'Commencer', german: 'Starten', japanese: '始める', italian: 'Iniziare', options: ['Start', 'End', 'Rest'] },
+      { id: 10, english: 'Jump', spanish: 'Saltar', french: 'Sauter', german: 'Springen', japanese: '跳ぶ', italian: 'Saltare', options: ['Jump', 'Walk', 'Breathe'] }
     ]
   }
 ];
@@ -120,7 +96,7 @@ const modulesData = [
 const runAudioTracks = [
   { id: '1', english: 'Start walking slowly', target: { spanish: 'Empieza a caminar despacio', french: 'Commencez à marcher lentement', german: 'Fange langsam an zu gehen', japanese: 'ゆっくり歩き始めて', italian: 'Inizia a camminare lentamente' }, duration: 10 },
   { id: '2', english: 'Increase your pace now', target: { spanish: 'Aumenta tu ritmo ahora', french: 'Augmentez votre allure maintenant', german: 'Erhöhe jetzt dein Tempo', japanese: '今すぐペースを上げて', italian: 'Aumenta il tuo passo adesso' }, duration: 15 },
-  { id: '3', english: 'Breathe deeply and relax', target: { spanish: 'Respira hondo y relájate', french: 'Respirez profondément et détendez-vous', german: 'Atme tief ein und entspanne dich', japanese: '深呼吸してリラックスして', italian: 'Respira profondamente e rilassati' }, duration: 12 }
+  { id: '3', english: 'Breathe deeply and relax', target: { spanish: 'Respira hondo y relájate', french: 'Respirez profondément et détendez-vous', german: 'Atme tief ein und entspanne dich', japanese: '深呼吸してリラックスして', italian: 'Inspira profondamente' }, duration: 12 }
 ];
 
 export default function App() {
@@ -128,18 +104,18 @@ export default function App() {
   const [selectedLang, setSelectedLang] = useState('spanish');
   const [isDark, setIsDark] = useState(true);
 
-  // Learning Module State
+  // Module & Single Word Index State
   const [currentModuleIdx, setCurrentModuleIdx] = useState(0);
-  const [isQuizMode, setIsQuizMode] = useState(false);
-  const [userAnswers, setUserAnswers] = useState({});
-  const [quizFinished, setQuizFinished] = useState(false);
+  const [wordIdx, setWordIdx] = useState(0); // Index 0 to 4 = Words, Index 5 = Quiz Time
+  const [quizAnswers, setQuizAnswers] = useState({});
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
 
-  // User Stats
-  const [xp, setXp] = useState(120);
-  const [streak, setStreak] = useState(3);
+  // User Progress & Gamification
+  const [xp, setXp] = useState(100);
+  const [streak, setStreak] = useState(2);
   const [completedModules, setCompletedModules] = useState([]);
 
-  // Audio Run State
+  // Runner Audio State
   const [trackIndex, setTrackIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [timeLeft, setTimeLeft] = useState(runAudioTracks[0].duration);
@@ -147,14 +123,15 @@ export default function App() {
 
   const currentLangObj = useMemo(() => languages.find(l => l.value === selectedLang), [selectedLang]);
   const activeModule = modulesData[currentModuleIdx];
+  const singleActiveWord = activeModule ? activeModule.words[wordIdx] : null;
 
-  // System Dark Theme setup
+  // Dark Mode Sync
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
     document.body.style.backgroundColor = isDark ? '#020617' : '#f8fafc';
   }, [isDark]);
 
-  // Dynamic PWA Manifest Injector
+  // PWA Dynamic Web Manifest
   useEffect(() => {
     const manifestJson = {
       name: "Learn & Run PWA",
@@ -162,25 +139,16 @@ export default function App() {
       start_url: "/",
       display: "standalone",
       background_color: "#020617",
-      theme_color: "#10b981",
-      icons: [
-        {
-          src: "https://via.placeholder.com/192/10b981/ffffff?text=Run",
-          sizes: "192x192",
-          type: "image/png"
-        }
-      ]
+      theme_color: "#10b981"
     };
-    const stringManifest = JSON.stringify(manifestJson);
-    const blob = new Blob([stringManifest], { type: 'application/json' });
-    const manifestURL = URL.createObjectURL(blob);
+    const blob = new Blob([JSON.stringify(manifestJson)], { type: 'application/json' });
     let linkTag = document.querySelector('link[rel="manifest"]');
     if (!linkTag) {
       linkTag = document.createElement('link');
       linkTag.rel = 'manifest';
       document.head.appendChild(linkTag);
     }
-    linkTag.href = manifestURL;
+    linkTag.href = URL.createObjectURL(blob);
   }, []);
 
   // Text To Speech Execution
@@ -197,18 +165,41 @@ export default function App() {
     }
   };
 
-  // Quiz evaluation
-  const handleAnswerSelect = (questionIdx, selectedOpt) => {
-    setUserAnswers((prev) => ({ ...prev, [questionIdx]: selectedOpt }));
+  // Single-Word Step Handlers
+  const handleNextWord = () => {
+    if (wordIdx < 4) {
+      const nextWordIndex = wordIdx + 1;
+      setWordIdx(nextWordIndex);
+      const nextWord = activeModule.words[nextWordIndex];
+      speakText(nextWord[selectedLang] || nextWord.spanish);
+    } else {
+      // All 5 words completed -> Move to Quiz
+      setWordIdx(5);
+    }
   };
 
-  const submitQuiz = () => {
+  const handlePrevWord = () => {
+    if (wordIdx > 0 && wordIdx < 5) {
+      const prevWordIndex = wordIdx - 1;
+      setWordIdx(prevWordIndex);
+      const prevWord = activeModule.words[prevWordIndex];
+      speakText(prevWord[selectedLang] || prevWord.spanish);
+    }
+  };
+
+  // Quiz Answer Selection
+  const handleQuizSelect = (wIdx, selectedOption) => {
+    setQuizAnswers(prev => ({ ...prev, [wIdx]: selectedOption }));
+  };
+
+  // Submit 5-Word Module Quiz
+  const handleSubmitQuiz = () => {
     let score = 0;
-    activeModule.quiz.forEach((q, idx) => {
-      if (userAnswers[idx] === q.answer) score += 1;
+    activeModule.words.forEach((w, idx) => {
+      if (quizAnswers[idx] === w.english) score += 1;
     });
 
-    if (score === activeModule.quiz.length) {
+    if (score === activeModule.words.length) {
       playSoundEffect('correct');
       setXp(x => x + 50);
       setStreak(s => s + 1);
@@ -216,19 +207,29 @@ export default function App() {
         setCompletedModules(prev => [...prev, activeModule.id]);
       }
     }
-    setQuizFinished(true);
+    setQuizSubmitted(true);
   };
 
-  // Run mode playback timer
+  // Advance to Next Module
+  const handleNextModule = () => {
+    if (currentModuleIdx < modulesData.length - 1) {
+      setCurrentModuleIdx(prev => prev + 1);
+      setWordIdx(0);
+      setQuizAnswers({});
+      setQuizSubmitted(false);
+    }
+  };
+
+  // Continuous Playback Engine for Audio Mode
   useEffect(() => {
     if (isPlaying && activeTab === 'run') {
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
             if (trackIndex < runAudioTracks.length - 1) {
-              const nextTrackIdx = trackIndex + 1;
-              setTrackIndex(nextTrackIdx);
-              return runAudioTracks[nextTrackIdx].duration;
+              const nextIdx = trackIndex + 1;
+              setTrackIndex(nextIdx);
+              return runAudioTracks[nextIdx].duration;
             } else {
               setIsPlaying(false);
               playSoundEffect('correct');
@@ -247,25 +248,23 @@ export default function App() {
   return (
     <div className={`min-h-screen ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'} font-sans transition-colors duration-300 pb-20 md:pb-8`}>
       
-      {/* HEADER / NAVIGATION BAR */}
+      {/* APP BAR / HEADER */}
       <header className={`sticky top-0 z-50 backdrop-blur-md border-b ${isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-white/80 border-slate-200'} px-4 py-3.5`}>
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           
-          {/* Logo & App Branding */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => setActiveTab('learn')}>
             <div className="h-9 w-9 rounded-2xl bg-emerald-400 flex items-center justify-center font-black text-slate-950 text-xl shadow-lg shadow-emerald-400/20">
               🏃
             </div>
             <div>
               <h1 className="font-extrabold text-base tracking-tight leading-none">Learn & Run</h1>
-              <span className="text-[10px] text-slate-400 font-medium">Audio Vocabulary Trainer</span>
+              <span className="text-[10px] text-slate-400 font-medium">1 Word at a Time Learning</span>
             </div>
           </div>
 
-          {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-1 bg-slate-900/40 border border-slate-800 p-1 rounded-full">
             {[
-              { id: 'learn', label: '🌱 Modules' },
+              { id: 'learn', label: '🌱 Study' },
               { id: 'run', label: '🎧 Audio Player' },
               { id: 'dashboard', label: '📊 Dashboard' },
               { id: 'about', label: 'ℹ️ About' }
@@ -280,7 +279,6 @@ export default function App() {
             ))}
           </nav>
 
-          {/* Controls: Language & Theme Switcher */}
           <div className="flex items-center gap-2">
             <select
               value={selectedLang}
@@ -304,30 +302,30 @@ export default function App() {
         </div>
       </header>
 
-      {/* MAIN CONTENT WRAPPER */}
+      {/* MAIN CONTENT AREA */}
       <main className="max-w-6xl mx-auto px-4 py-8">
 
         {/* ========================================================================= */}
-        {/* VIEW 1: MODULES & FLASHCARDS LEARNING                                     */}
+        {/* VIEW 1: ONE-WORD AT A TIME + 5-WORD MODULE QUIZ                          */}
         {/* ========================================================================= */}
         {activeTab === 'learn' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            {/* Left Sidebar: Module Selector */}
+            {/* Left Sidebar: Modules Navigation */}
             <div className="lg:col-span-4 space-y-3">
               <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4 px-1">Curriculum Modules</h2>
-              {modulesData.map((mod, idx) => {
+              {modulesData.map((m, idx) => {
                 const isActive = idx === currentModuleIdx;
-                const isDone = completedModules.includes(mod.id);
+                const isDone = completedModules.includes(m.id);
 
                 return (
                   <button
-                    key={mod.id}
+                    key={m.id}
                     onClick={() => {
                       setCurrentModuleIdx(idx);
-                      setIsQuizMode(false);
-                      setQuizFinished(false);
-                      setUserAnswers({});
+                      setWordIdx(0);
+                      setQuizAnswers({});
+                      setQuizSubmitted(false);
                     }}
                     className={`w-full text-left p-4 rounded-3xl border transition flex items-center justify-between ${isActive ? 'border-emerald-500 bg-emerald-500/10' : isDark ? 'border-slate-800 bg-slate-900 hover:border-slate-700' : 'border-slate-200 bg-white hover:border-slate-300'}`}
                   >
@@ -335,126 +333,137 @@ export default function App() {
                       <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wide">
                         Module {idx + 1}
                       </span>
-                      <h3 className="font-bold text-sm leading-tight text-slate-200">{mod.title}</h3>
-                      <p className="text-xs text-slate-400 mt-1 line-clamp-1">{mod.description}</p>
+                      <h3 className="font-bold text-sm leading-tight text-slate-200">{m.title}</h3>
                     </div>
-                    {isDone && <span className="text-emerald-400 text-base font-bold">✓</span>}
+                    {isDone && <span className="text-emerald-400 font-bold">✓</span>}
                   </button>
                 );
               })}
             </div>
 
-            {/* Right Main Content Area: Flashcard View or Quiz View */}
+            {/* Right Main Area: Displays ONLY 1 Word at a time, followed by 5-Word Quiz */}
             <div className="lg:col-span-8">
-              <div className={`p-6 sm:p-8 rounded-[2.5rem] border shadow-xl ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
+              <div className={`p-6 sm:p-8 rounded-[2.5rem] border shadow-xl relative ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
                 
-                {/* Module Header */}
+                {/* Visual Step Tracker (1 to 5 words, then Quiz) */}
                 <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-6">
                   <div>
-                    <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">Current Unit</span>
-                    <h2 className="text-xl sm:text-2xl font-black">{activeModule.title}</h2>
+                    <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">{activeModule.title}</span>
+                    <h2 className="text-xl sm:text-2xl font-black">
+                      {wordIdx < 5 ? `Word ${wordIdx + 1} of 5` : 'Module Quiz (5 Questions)'}
+                    </h2>
                   </div>
-                  
-                  {!isQuizMode ? (
-                    <button
-                      onClick={() => setIsQuizMode(true)}
-                      className="px-4 py-2 rounded-2xl bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-400/20 hover:scale-105 transition"
-                    >
-                      Take Quiz →
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => setIsQuizMode(false)}
-                      className="px-4 py-2 rounded-2xl border border-slate-700 text-slate-300 font-bold text-xs"
-                    >
-                      ← Back to Vocabulary
-                    </button>
-                  )}
+
+                  <div className="flex items-center gap-1.5">
+                    {[0, 1, 2, 3, 4].map((step) => (
+                      <div
+                        key={step}
+                        className={`h-2.5 w-6 rounded-full transition-all ${wordIdx === step ? 'bg-emerald-400 scale-105' : step < wordIdx ? 'bg-emerald-500/40' : 'bg-slate-800'}`}
+                      />
+                    ))}
+                    <div className={`h-2.5 w-6 rounded-full ml-1 transition-all ${wordIdx === 5 ? 'bg-amber-400 scale-105' : 'bg-slate-800'}`} />
+                  </div>
                 </div>
 
-                {/* MODE A: FLASHCARDS (Batch study all words first) */}
-                {!isQuizMode && (
-                  <div className="space-y-6">
-                    <p className="text-xs text-slate-400 font-medium">Review all vocabulary items in this batch before taking the module quiz:</p>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {activeModule.words.map((item, idx) => {
-                        const foreignWord = item[selectedLang] || item.spanish;
-                        return (
-                          <div key={idx} className={`p-5 rounded-2xl border flex items-center justify-between ${isDark ? 'border-slate-800 bg-slate-950' : 'border-slate-100 bg-slate-50'}`}>
-                            <div>
-                              <div className="text-xs text-slate-400 font-medium">{item.english}</div>
-                              <div className="text-xl font-bold text-emerald-400 mt-0.5">{foreignWord}</div>
-                            </div>
-                            <button
-                              onClick={() => speakText(foreignWord)}
-                              className="p-3 rounded-xl bg-emerald-400/10 text-emerald-400 hover:bg-emerald-400 hover:text-slate-950 transition"
-                            >
-                              <IconAudio className="h-4 w-4" />
-                            </button>
-                          </div>
-                        );
-                      })}
+                {/* STEP 1: SINGLE WORD FLASHCARD VIEW (Shows ONLY 1 word at a time) */}
+                {wordIdx < 5 && singleActiveWord && (
+                  <div className="text-center py-8">
+                    <span className="inline-block px-3.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-[10px] font-bold tracking-wider uppercase mb-6">
+                      Word {wordIdx + 1} of 5
+                    </span>
+
+                    {/* Single Foreign Word */}
+                    <div className="text-4xl sm:text-6xl font-black text-emerald-400 my-2 tracking-wide">
+                      {singleActiveWord[selectedLang] || singleActiveWord.spanish}
                     </div>
 
-                    <div className="pt-4 border-t border-slate-800 text-center">
+                    {/* English Meaning */}
+                    <p className="text-xl font-bold text-slate-300 mb-6">
+                      "{singleActiveWord.english}"
+                    </p>
+
+                    {/* Audio Pronunciation Button */}
+                    <button
+                      type="button"
+                      onClick={() => speakText(singleActiveWord[selectedLang] || singleActiveWord.spanish)}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-400/20 hover:scale-105 active:scale-95 transition mb-10"
+                    >
+                      <IconAudio className="h-4 w-4" /> Listen Pronunciation
+                    </button>
+
+                    {/* Navigation Buttons */}
+                    <div className="flex items-center justify-between pt-6 border-t border-slate-800">
                       <button
-                        onClick={() => setIsQuizMode(true)}
-                        className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-emerald-400 text-slate-950 font-black text-sm shadow-xl shadow-emerald-400/20 hover:scale-105 transition"
+                        onClick={handlePrevWord}
+                        disabled={wordIdx === 0}
+                        className="px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 text-xs font-semibold disabled:opacity-30"
                       >
-                        Ready! Start Module Quiz →
+                        ← Previous Word
+                      </button>
+
+                      <button
+                        onClick={handleNextWord}
+                        className="px-6 py-2.5 rounded-xl bg-emerald-400 text-slate-950 text-xs font-black shadow-md hover:scale-105 transition"
+                      >
+                        {wordIdx === 4 ? 'Finish All 5 Words & Start Quiz →' : 'Next Word →'}
                       </button>
                     </div>
                   </div>
                 )}
 
-                {/* MODE B: MODULE QUIZ */}
-                {isQuizMode && (
+                {/* STEP 2: 5-WORD QUIZ (Appears ONLY after all 5 words are viewed) */}
+                {wordIdx === 5 && (
                   <div className="space-y-6">
-                    {!quizFinished ? (
+                    {!quizSubmitted ? (
                       <>
-                        {activeModule.quiz.map((q, qIdx) => (
-                          <div key={qIdx} className={`p-5 rounded-2xl border ${isDark ? 'border-slate-800 bg-slate-950' : 'border-slate-100 bg-slate-50'}`}>
-                            <p className="font-bold text-sm mb-3 text-slate-200">{qIdx + 1}. {q.question}</p>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                              {q.options.map((opt, oIdx) => {
-                                const isSelected = userAnswers[qIdx] === opt;
-                                return (
-                                  <button
-                                    key={oIdx}
-                                    onClick={() => handleAnswerSelect(qIdx, opt)}
-                                    className={`p-3 rounded-xl text-xs font-bold border transition ${isSelected ? 'border-emerald-400 bg-emerald-400/20 text-emerald-400' : 'border-slate-800 text-slate-400 hover:border-slate-700'}`}
-                                  >
-                                    {opt}
-                                  </button>
-                                );
-                              })}
+                        <p className="text-xs text-slate-400 font-medium">All 5 words complete! Select the correct English translation for each word:</p>
+                        
+                        {activeModule.words.map((word, wIdx) => {
+                          const targetWord = word[selectedLang] || word.spanish;
+                          return (
+                            <div key={wIdx} className={`p-4 rounded-2xl border ${isDark ? 'border-slate-800 bg-slate-950' : 'border-slate-100 bg-slate-50'}`}>
+                              <div className="flex items-center justify-between mb-3">
+                                <span className="font-black text-emerald-400 text-lg">{targetWord}</span>
+                                <span className="text-[10px] text-slate-400">Question {wIdx + 1} of 5</span>
+                              </div>
+                              
+                              <div className="grid grid-cols-3 gap-2">
+                                {word.options.map((opt, oIdx) => {
+                                  const isSelected = quizAnswers[wIdx] === opt;
+                                  return (
+                                    <button
+                                      key={oIdx}
+                                      onClick={() => handleQuizSelect(wIdx, opt)}
+                                      className={`p-2.5 rounded-xl text-xs font-bold border transition ${isSelected ? 'border-emerald-400 bg-emerald-400/20 text-emerald-400' : 'border-slate-800 text-slate-400 hover:border-slate-700'}`}
+                                    >
+                                      {opt}
+                                    </button>
+                                  );
+                                })}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
 
                         <button
-                          onClick={submitQuiz}
-                          disabled={Object.keys(userAnswers).length < activeModule.quiz.length}
-                          className="w-full py-4 rounded-2xl bg-emerald-400 text-slate-950 font-black text-sm shadow-xl shadow-emerald-400/20 disabled:opacity-30 transition"
+                          onClick={handleSubmitQuiz}
+                          disabled={Object.keys(quizAnswers).length < 5}
+                          className="w-full py-4 rounded-2xl bg-amber-400 text-slate-950 font-black text-sm shadow-xl disabled:opacity-30 transition"
                         >
-                          Submit Quiz
+                          Submit 5-Question Quiz
                         </button>
                       </>
                     ) : (
                       <div className="text-center py-8 space-y-4">
                         <div className="text-5xl">🎉</div>
-                        <h3 className="text-2xl font-black">Module Quiz Completed!</h3>
-                        <p className="text-xs text-slate-400">You earned +50 XP and increased your study streak.</p>
+                        <h3 className="text-2xl font-black">All 5 Questions Completed!</h3>
+                        <p className="text-xs text-slate-400">You earned +50 XP and mastered this module.</p>
                         <button
-                          onClick={() => {
-                            setIsQuizMode(false);
-                            setQuizFinished(false);
-                            setUserAnswers({});
-                          }}
-                          className="px-6 py-3 rounded-2xl bg-emerald-400 text-slate-950 font-bold text-xs"
+                          onClick={handleNextModule}
+                          disabled={currentModuleIdx >= modulesData.length - 1}
+                          className="px-8 py-3.5 rounded-2xl bg-emerald-400 text-slate-950 font-black text-xs shadow-lg disabled:opacity-30"
                         >
-                          Return to Vocabulary
+                          {currentModuleIdx < modulesData.length - 1 ? 'Start Next Module →' : 'All Modules Finished!'}
                         </button>
                       </div>
                     )}
@@ -490,7 +499,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Controls */}
               <div className="flex items-center justify-center gap-6">
                 <button
                   onClick={() => setIsPlaying(!isPlaying)}
@@ -505,22 +513,21 @@ export default function App() {
         )}
 
         {/* ========================================================================= */}
-        {/* VIEW 3: USER DASHBOARD & STATS                                           */}
+        {/* VIEW 3: DASHBOARD                                                        */}
         {/* ========================================================================= */}
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
             <h2 className="text-xl font-black">Performance Dashboard</h2>
-            
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className={`p-6 rounded-3xl border ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
                 <div className="text-3xl mb-2">🔥</div>
-                <div className="text-xs text-slate-400 font-semibold uppercase">Current Streak</div>
+                <div className="text-xs text-slate-400 font-semibold uppercase">Streak</div>
                 <div className="text-2xl font-black text-slate-100">{streak} Days</div>
               </div>
 
               <div className={`p-6 rounded-3xl border ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
                 <div className="text-3xl mb-2">⚡</div>
-                <div className="text-xs text-slate-400 font-semibold uppercase">Total XP Points</div>
+                <div className="text-xs text-slate-400 font-semibold uppercase">Total XP</div>
                 <div className="text-2xl font-black text-emerald-400">{xp} XP</div>
               </div>
 
@@ -534,26 +541,23 @@ export default function App() {
         )}
 
         {/* ========================================================================= */}
-        {/* VIEW 4: ABOUT PAGE                                                        */}
+        {/* VIEW 4: ABOUT                                                            */}
         {/* ========================================================================= */}
         {activeTab === 'about' && (
           <div className={`p-8 rounded-[2.5rem] border max-w-2xl mx-auto space-y-4 ${isDark ? 'border-slate-800 bg-slate-900' : 'border-slate-200 bg-white'}`}>
             <h2 className="text-2xl font-black">About Learn & Run</h2>
             <p className="text-sm text-slate-400 leading-relaxed">
-              Learn & Run combines audio-first spaced repetition with outdoor fitness activities. Learn whole module vocabulary blocks at home, then run while listening to automated timing queues in your chosen target language.
+              This app guides you through 1 single word at a time. After cycling through all 5 words in a module, a 5-question test reviews your retention.
             </p>
-            <div className="pt-4 border-t border-slate-800">
-              <span className="text-xs text-emerald-400 font-bold">PWA Enabled • Works Offline</span>
-            </div>
           </div>
         )}
 
       </main>
 
-      {/* MOBILE BOTTOM NAVIGATION BAR */}
+      {/* MOBILE NAVIGATION BAR */}
       <nav className={`md:hidden fixed bottom-0 left-0 right-0 border-t ${isDark ? 'bg-slate-950/90 border-slate-800' : 'bg-white/90 border-slate-200'} backdrop-blur-lg px-4 py-2 flex items-center justify-around z-50`}>
         {[
-          { id: 'learn', label: 'Modules', icon: '🌱' },
+          { id: 'learn', label: 'Study', icon: '🌱' },
           { id: 'run', label: 'Run', icon: '🎧' },
           { id: 'dashboard', label: 'Stats', icon: '📊' },
           { id: 'about', label: 'About', icon: 'ℹ️' }
