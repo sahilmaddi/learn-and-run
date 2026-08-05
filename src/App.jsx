@@ -30,8 +30,37 @@ const IconPause = ({ className }) => (
 );
 
 // ============================================================================
-// AUDIO UTILS & ROBUST NATIVE TTS ENGINE
+// AUDIO UTILS & ROBUST NATIVE TTS ENGINE WITH VOICE CACHING
 // ============================================================================
+let cachedVoices = [];
+
+const updateVoicesCache = () => {
+  if ('speechSynthesis' in window) {
+    cachedVoices = window.speechSynthesis.getVoices();
+  }
+};
+
+if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+  updateVoicesCache();
+  window.speechSynthesis.onvoiceschanged = updateVoicesCache;
+}
+
+// Phonetic fallback map for isolated short words that trigger letter-spelling
+const PHONETIC_MAP = {
+  'es-ES': {
+    'Sí': 'See',
+    'sí': 'See',
+    'No': 'Noh',
+    'Ir': 'Eer',
+    'Tú': 'Too',
+    'Yo': 'Yoh'
+  },
+  'fr-FR': {
+    'Oui': 'Wee',
+    'Non': 'Noh'
+  }
+};
+
 const playSoundEffect = (type) => {
   try {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -60,19 +89,28 @@ const speakTextHelper = (text, langCode) => {
   if (!('speechSynthesis' in window)) return;
 
   try {
-    window.speechSynthesis.cancel(); // Stop any pending speech
+    window.speechSynthesis.cancel(); // Reset speech pipeline
 
-    const utter = new SpeechSynthesisUtterance(text);
+    if (cachedVoices.length === 0) {
+      updateVoicesCache();
+    }
+
+    const langPrefix = langCode.slice(0, 2).toLowerCase();
+
+    // Find native match (e.g. es-ES, es-MX, es-US, or any 'es' prefix)
+    const nativeVoice =
+      cachedVoices.find((v) => v.lang.replace('_', '-').toLowerCase() === langCode.toLowerCase()) ||
+      cachedVoices.find((v) => v.lang.toLowerCase().startsWith(langPrefix));
+
+    // If no native voice exists on device, use phonetic replacement hint
+    let speechString = text;
+    if (!nativeVoice && PHONETIC_MAP[langCode] && PHONETIC_MAP[langCode][text]) {
+      speechString = PHONETIC_MAP[langCode][text];
+    }
+
+    const utter = new SpeechSynthesisUtterance(speechString);
     utter.lang = langCode;
     utter.rate = 0.85;
-
-    const availableVoices = window.speechSynthesis.getVoices();
-    const langPrefix = langCode.slice(0, 2);
-
-    // Prioritize exact match, then language prefix match (e.g., 'es')
-    const nativeVoice =
-      availableVoices.find((v) => v.lang.replace('_', '-') === langCode) ||
-      availableVoices.find((v) => v.lang.startsWith(langPrefix));
 
     if (nativeVoice) {
       utter.voice = nativeVoice;
@@ -240,15 +278,8 @@ export default function App() {
   const activeModule = modulesData[currentModuleIdx];
   const singleActiveWord = activeModule ? activeModule.words[wordIdx] : null;
 
-  // Initialize Voices on Mount & set listener to ensure speech engine voice pool is loaded
   useEffect(() => {
-    if ('speechSynthesis' in window) {
-      const loadVoices = () => {
-        window.speechSynthesis.getVoices();
-      };
-      loadVoices();
-      window.speechSynthesis.onvoiceschanged = loadVoices;
-    }
+    updateVoicesCache();
   }, []);
 
   useEffect(() => {
